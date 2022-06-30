@@ -23,7 +23,7 @@
 <script lang="ts">
 import { Vue, Options } from "vue-class-component";
 import BlogCard from "@/components/blog/BlogCard.vue"; // @ is an alias to /src
-import blogApis from "@/apis/blogApis";
+import BlogApis from "@/apis/BlogApis";
 import { ElMessage } from "element-plus";
 import { BlogVO } from "@/interfaces/BlogInterfaces";
 
@@ -40,7 +40,7 @@ export default class Index extends Vue {
   title = "hhh";
 
   getBlogCardList() {
-    blogApis.getBlogCardList().then((res) => {
+    BlogApis.getBlogCardList().then((res) => {
       if (res.data.code == 200) {
         for (let i = 0; i < res.data.body.length; i++) {
           this.blogCardList.push({

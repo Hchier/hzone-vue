@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { Vue, Options } from "vue-class-component";
-import userApis from "@/apis/userApis";
+import UserApis from "@/apis/UserApis";
 import { ElMessage } from "element-plus";
 import router from "@/router";
 
@@ -23,7 +23,7 @@ export default class LoginView extends Vue {
   };
 
   login() {
-    userApis.login(this.loginForm).then((res) => {
+    UserApis.login(this.loginForm).then((res) => {
       if (res.data.code != 200) {
         ElMessage.error(res.data.message);
       }

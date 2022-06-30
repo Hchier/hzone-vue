@@ -18,6 +18,7 @@
     <ul>
       <li v-for="item in blogCommentList" :key="item">
         <BlogCommentCard
+          :currentUser="currentUser"
           :id="item.id"
           :publisher="item.publisher"
           :blogId="item.blogId"
@@ -47,19 +48,21 @@ import { Vue, Options } from "vue-class-component";
 import { BlogVO, BlogFavorForm } from "@/interfaces/BlogInterfaces";
 import {
   BlogCommentVO,
-  BlogCommentForm,
+  BlogCommentAddForm,
 } from "@/interfaces/BlogCommentInterfaces";
 import router from "@/router";
-import blogApis from "@/apis/blogApis";
+import blogApis from "@/apis/BlogApis";
 import { ElMessage } from "element-plus";
 import BlogCard from "@/components/blog/BlogCard.vue";
 import BlogCommentCard from "@/components/blog/BlogCommentCard.vue";
-import blogFavorApis from "@/apis/blogFavorApis";
-import blogCommentApis from "@/apis/blogCommentApis";
+import BlogFavorApis from "@/apis/BlogFavorApis";
+import BlogCommentApis from "@/apis/BlogCommentApis";
+import BaseApis from "@/apis/BaseApis";
 
 @Options({
   created() {
     this.getBlog();
+    this.getCurrentUser();
   },
   components: {
     BlogCard,
@@ -67,6 +70,7 @@ import blogCommentApis from "@/apis/blogCommentApis";
   },
 })
 export default class BlogView extends Vue {
+  currentUser = "";
   blogFavorForm: BlogFavorForm = {
     praiser: "-1",
     blogId: -1,
@@ -87,13 +91,22 @@ export default class BlogView extends Vue {
     tagList: [],
     favored: false,
   };
-  blogCommentForm: BlogCommentForm = {
+  blogCommentForm: BlogCommentAddForm = {
     publisher: "-1",
     blogId: -1,
     content: "",
     sourceComment: -1,
     commentOf: -1,
   };
+
+  getCurrentUser() {
+    BaseApis.getCurrentUser().then((res) => {
+      if (res.data.code == 200) {
+        this.currentUser = res.data.body as string;
+        ElMessage.success(this.currentUser);
+      }
+    });
+  }
 
   getBlog() {
     blogApis
@@ -102,7 +115,6 @@ export default class BlogView extends Vue {
         if (res.data.code != 200) {
           ElMessage.error(res.data.message);
         } else {
-          ElMessage.success("ok");
           this.blogVO = res.data.body as BlogVO;
           this.blogVO.updateTime = new Date(
             this.blogVO.updateTime as unknown as number
@@ -113,11 +125,15 @@ export default class BlogView extends Vue {
   }
 
   getBlogComment() {
-    blogCommentApis.get(this.blogVO.id, this.blogCommentPageNum).then((res) => {
+    BlogCommentApis.get(this.blogVO.id, this.blogCommentPageNum).then((res) => {
       if (res.data.code == 200) {
         ElMessage.success("成功加载了" + res.data.body.length + "条评论");
         this.blogCommentPageNum++;
         for (let i = 0; i < res.data.body.length; i++) {
+          if (res.data.body[i].deleted) {
+            res.data.body[i].content =
+              '<span style="color: red">' + "该评论已被删除" + "</span>";
+          }
           this.blogCommentList.push({
             id: res.data.body[i].id,
             publisher: res.data.body[i].publisher,
@@ -141,7 +157,7 @@ export default class BlogView extends Vue {
   updateFavor() {
     this.blogFavorForm.blogId = this.blogVO.id;
     if (this.blogVO.favored) {
-      blogFavorApis.favorCancel(this.blogFavorForm).then((res) => {
+      BlogFavorApis.favorCancel(this.blogFavorForm).then((res) => {
         if (res.data.code == 200) {
           ElMessage.success("取消点赞成功");
           this.blogVO.favorNum -= 1;
@@ -151,7 +167,7 @@ export default class BlogView extends Vue {
         }
       });
     } else {
-      blogFavorApis.favor(this.blogFavorForm).then((res) => {
+      BlogFavorApis.favor(this.blogFavorForm).then((res) => {
         if (res.data.code == 200) {
           ElMessage.success("点赞成功");
           this.blogVO.favorNum += 1;
@@ -165,13 +181,13 @@ export default class BlogView extends Vue {
 
   publishComment() {
     this.blogCommentForm.blogId = this.blogVO.id;
-    blogCommentApis.publish(this.blogCommentForm).then((res) => {
+    BlogCommentApis.publish(this.blogCommentForm).then((res) => {
       if (res.data.code == 200) {
         ElMessage.success("评论发表成功");
         this.blogVO.commentNum++;
         this.blogCommentList.push({
           id: res.data.body,
-          publisher: "",
+          publisher: this.currentUser,
           blogId: this.blogVO.id,
           content: this.blogCommentForm.content,
           commentNum: 0,

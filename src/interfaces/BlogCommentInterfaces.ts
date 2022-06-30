@@ -12,10 +12,15 @@ export interface BlogCommentVO {
   createTime: Date;
 }
 
-export interface BlogCommentForm {
+export interface BlogCommentAddForm {
   publisher: string;
   blogId: number;
   content: string;
   sourceComment: number;
   commentOf: number;
+}
+
+export interface BlogCommentDeleteForm {
+  id: number;
+  blogId: number;
 }
