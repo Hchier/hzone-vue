@@ -1,30 +1,28 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view />
+  <div class="common-layout">
+    <el-container>
+      <el-header>
+        <el-button>
+          <el-link href="/index" style="display: block">index</el-link>
+        </el-button>
+        <el-button>
+          <el-link href="/about">about</el-link>
+        </el-button>
+        <el-button>
+          <el-link href="/login">login</el-link>
+        </el-button>
+        <el-button>
+          <el-link href="/test">test</el-link>
+        </el-button>
+      </el-header>
+      <el-container>
+        <el-container>
+          <el-main>
+            <router-view />
+          </el-main>
+        </el-container>
+      </el-container>
+      <el-footer></el-footer>
+    </el-container>
+  </div>
 </template>
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
