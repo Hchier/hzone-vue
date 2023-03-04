@@ -1,37 +1,66 @@
 <template>
-  <el-input v-model="loginForm.username"></el-input>
-  <el-input v-model="loginForm.password" type="password"></el-input>
-  <el-button type="primary" @click="login">ok</el-button>
+
+    <el-form
+        :label-position="'left'"
+        label-width="100px"
+        :model="userLoginDto"
+        style="max-width: 460px; margin: auto"
+    >
+        <el-form-item label="username: ">
+            <el-input v-model="userLoginDto.username" />
+        </el-form-item>
+        <el-form-item label="password: ">
+            <el-input v-model="userLoginDto.password" />
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="login">
+                登录
+            </el-button>
+            <el-button @click="resetForm">清空</el-button>
+        </el-form-item>
+    </el-form>
+
 </template>
 
 <script lang="ts">
-import { Vue, Options } from "vue-class-component";
+import { reactive } from "vue";
+import { UserLoginDTO } from "@/utils/dtos";
 import UserApis from "@/apis/UserApis";
 import { ElMessage } from "element-plus";
-import router from "@/router";
 
-interface LoginForm {
-  username: string;
-  password: string;
-}
+export default {
+    name: "LoginView",
+    setup() {
+        let userLoginDto: UserLoginDTO = reactive({
+            username: "",
+            password: "",
+        });
 
-@Options({})
-export default class LoginView extends Vue {
-  loginForm: LoginForm = {
-    username: "hchier",
-    password: "pyh903903",
-  };
+        const resetForm = () => {
+            userLoginDto.username = "";
+            userLoginDto.password = "";
 
-  login() {
-    UserApis.login(this.loginForm).then((res) => {
-      if (res.data.code != 200) {
-        ElMessage.error(res.data.message);
-      }
-      ElMessage.success(res.data.message);
-      router.push({ path: "/index" });
-    });
-  }
-}
+        };
+
+        function login() {
+            UserApis.login(userLoginDto).then(res => {
+                if (res.data.code === 200) {
+                    ElMessage.success("登录成功");
+                } else {
+                    ElMessage.error("登录失败：" + res.data.body);
+                }
+            });
+        }
+
+        return {
+            userLoginDto,
+            resetForm,
+            login,
+        };
+    },
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>

@@ -1,6 +1,5 @@
-import { get, post } from "@/utils/request";
+import { post } from "@/utils/request";
 
 export default {
-  getBlogCardList: () => get("/api/blog/getRandom"),
-  getBlogById: (id: number) => get("/api/blog/get/" + id),
+    getBlog: (id: number) => post("/blog/get/" + id),
 };

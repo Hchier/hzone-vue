@@ -1,5 +1,6 @@
-import { get, post } from "@/utils/request";
+import { postWithoutJson } from "@/utils/request";
+import { UserLoginDTO } from "@/utils/dtos";
 
 export default {
-  login: (params: object) => post("/login", params),
+    login: (userLoginDTO: UserLoginDTO) => postWithoutJson("/user/login", userLoginDTO),
 };
