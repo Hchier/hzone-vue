@@ -6,8 +6,9 @@
                      v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
                      v-bind:moreRepliesButtonVisible="true"
                      @setCommentRepliedDialogVisible="setCommentRepliedDialogVisible(item.id)"></BlogComment>
+        <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)">更多评论</el-button>
     </div>
-    <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)">更多评论</el-button>
+
 
     <el-dialog v-model="commentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose">
         <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
@@ -33,6 +34,7 @@ import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
 import blogCommentApis from "@/common/apis/BlogCommentApis";
 import {Ref, UnwrapRef} from "@vue/reactivity";
+import {BlogCommentGetDTO} from "@/common/dtos/BlogCommentDTOs";
 
 export default {
     name: "HomeView",
@@ -104,14 +106,20 @@ export default {
                 showCommentArea.value = false;
             } else {
                 if (blogCommentVOList.length === 0) {
-                    getBlogCommentVOList(blogVO.id, -1, 0, blogCommentVOList);
+                    getBlogCommentVOList(blogVO.id, -1, 0, 0, blogCommentVOList);
                 }
                 showCommentArea.value = true;
             }
         };
 
-        function getBlogCommentVOList(blogId: number, baseComment: number, pageNum: number, list: Array<BlogCommentVO>) {
-            blogCommentApis.get(blogId, baseComment, pageNum).then(res => {
+        function getBlogCommentVOList(blogId: number, baseComment: number, pageNum: number, hidden: number, list: Array<BlogCommentVO>) {
+            let blogCommentGetDTO: BlogCommentGetDTO = {
+                blogId: blogId,
+                baseComment: baseComment,
+                hidden: hidden,
+                pageNum: pageNum,
+            };
+            blogCommentApis.get(blogCommentGetDTO).then(res => {
                 if (res.data.code == 200) {
                     let arr = (res.data.body as Array<BlogCommentVO>);
                     if (arr.length === 0) {
@@ -121,7 +129,7 @@ export default {
                         list.push(value);
                     });
                 } else {
-                    //todo
+                    ElMessage.error(res.data.body)
                 }
             });
         }
@@ -131,10 +139,10 @@ export default {
         let loadMoreComments = (baseComment: number, list: Array<BlogCommentVO>) => {
             if (baseComment === -1) {
                 commentPageNum.value++;
-                getBlogCommentVOList(blogVO.id, baseComment, commentPageNum.value, list);
+                getBlogCommentVOList(blogVO.id, baseComment, commentPageNum.value, 0, list);
             } else {
                 commentRepliedPageNum.value++;
-                getBlogCommentVOList(blogVO.id, baseComment, commentRepliedPageNum.value, list);
+                getBlogCommentVOList(blogVO.id, baseComment, commentRepliedPageNum.value, 0, list);
             }
 
         };
@@ -146,7 +154,7 @@ export default {
 
         function setCommentRepliedDialogVisible(commentId: number) {
             commentRepliedDialog.value = true;
-            getBlogCommentVOList(blogVO.id, commentId, 0, blogCommentRepliedVOList);
+            getBlogCommentVOList(blogVO.id, commentId, 0, 0, blogCommentRepliedVOList);
         }
 
         function commentRepliedDialogClose() {

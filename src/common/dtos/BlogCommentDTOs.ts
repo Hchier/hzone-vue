@@ -5,3 +5,10 @@ export type BlogCommentDeleteDTO = {
     baseComment: number,
     commentOf: number
 }
+
+export type BlogCommentGetDTO = {
+    blogId: number,
+    baseComment: number,
+    hidden: number,
+    pageNum: number,
+}
