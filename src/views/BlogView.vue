@@ -1,13 +1,30 @@
 <template>
     <Blog v-bind:blogVO="blogVO"></Blog>
-    <el-button type="primary" @click="getBlogCommentVOList(blogVO.id, -1, 0);">评论({{ blogVO.commentNum }})</el-button>
-    <div v-for="(item) in blogCommentVOList" v-bind:key="item.id">
-        <BlogComment v-bind:blogCommentVO="item" v-bind:hiddenPermission="true"></BlogComment>
+    <el-button type="primary" @click="openOrCloseCommentArea">评论({{ blogVO.commentNum }})</el-button>
+    <div v-for="(item) in blogCommentVOList" v-bind:key="item.id" v-show="showCommentArea" style="margin: auto">
+        <BlogComment v-bind:blogCommentVO="item"
+                     v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
+                     v-bind:moreRepliesButtonVisible="true"
+                     @setCommentRepliedDialogVisible="setCommentRepliedDialogVisible(item.id)"></BlogComment>
     </div>
+    <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)">更多评论</el-button>
+
+    <el-dialog v-model="commentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose">
+        <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
+             style="margin: auto">
+            <BlogComment v-bind:blogCommentVO="item"
+                         v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
+                         v-bind:moreRepliesButtonVisible="false">
+            </BlogComment>
+            <el-button type="primary"
+                       @click="loadMoreComments(item.id,blogCommentRepliedVOList)">更多评论
+            </el-button>
+        </div>
+    </el-dialog>
 </template>
 
 <script lang="ts">
-import {reactive} from "vue";
+import {reactive, ref} from "vue";
 import BlogComment from "@/components/BlogCommentComponent.vue";
 import Blog from "@/components/BlogComponent.vue";
 import {BlogCommentVO, BlogVO} from "@/utils/vos";
@@ -15,6 +32,7 @@ import BlogApis from "@/apis/BlogApis";
 import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
 import blogCommentApis from "@/apis/BlogCommentApis";
+import {Ref, UnwrapRef} from "@vue/reactivity";
 
 export default {
     name: "HomeView",
@@ -41,11 +59,20 @@ export default {
             updatePermission: false,
         });
         let blogCommentVOList: Array<BlogCommentVO> = reactive([]);
-
+        let showCommentArea = ref(false);
 
         function getBlogVO() {
-            let id: number = useRoute().params.id as unknown as number;
-            console.log(id);
+            let idStr: string = useRoute().params.id as string;
+            let id: number;
+            if (((idStr != null) &&
+                (idStr !== '') &&
+                !isNaN(Number(idStr.toString())))) {
+                id = Number(idStr);
+            } else {
+                ElMessage.error("查找博客失败");
+                return;
+            }
+
             BlogApis.getBlog(id).then(res => {
                 if (res.data.code == 200) {
                     ElMessage.success("查找博客成功");
@@ -65,21 +92,33 @@ export default {
                     blogVO.topic = vo.topic;
                     blogVO.updatePermission = vo.updatePermission;
                 } else {
-                    //todo
+                    ElMessage.error("查找博客失败：" + res.data.body);
                 }
             });
         }
 
         getBlogVO();
 
+        const openOrCloseCommentArea = () => {
+            if (showCommentArea.value) {
+                showCommentArea.value = false;
+            } else {
+                if (blogCommentVOList.length === 0) {
+                    getBlogCommentVOList(blogVO.id, -1, 0, blogCommentVOList);
+                }
+                showCommentArea.value = true;
+            }
+        };
 
-
-        function getBlogCommentVOList(blogId: number, commentOf: number, pageNum: number) {
-            blogCommentApis.get(blogId, commentOf, pageNum).then(res => {
+        function getBlogCommentVOList(blogId: number, baseComment: number, pageNum: number, list: Array<BlogCommentVO>) {
+            blogCommentApis.get(blogId, baseComment, pageNum).then(res => {
                 if (res.data.code == 200) {
-                    ElMessage.success("查找评论成功");
-                    (res.data.body as Array<BlogCommentVO>).forEach(value => {
-                        blogCommentVOList.push(value);
+                    let arr = (res.data.body as Array<BlogCommentVO>);
+                    if (arr.length === 0) {
+                        ElMessage.error("暂无更多评论...");
+                    }
+                    arr.forEach(value => {
+                        list.push(value);
                     });
                 } else {
                     //todo
@@ -88,10 +127,50 @@ export default {
         }
 
 
+        let commentPageNum: Ref<UnwrapRef<number>> = ref(0);
+        let loadMoreComments = (baseComment: number, list: Array<BlogCommentVO>) => {
+            if (baseComment === -1) {
+                commentPageNum.value++;
+                getBlogCommentVOList(blogVO.id, baseComment, commentPageNum.value, list);
+            } else {
+                commentRepliedPageNum.value++;
+                getBlogCommentVOList(blogVO.id, baseComment, commentRepliedPageNum.value, list);
+            }
+
+        };
+
+
+        let commentRepliedPageNum: Ref<UnwrapRef<number>> = ref(0);
+        let commentRepliedDialog = ref(false);
+        let blogCommentRepliedVOList: Array<BlogCommentVO> = reactive([]);
+
+        function setCommentRepliedDialogVisible(commentId: number) {
+            commentRepliedDialog.value = true;
+            getBlogCommentVOList(blogVO.id, commentId, 0, blogCommentRepliedVOList);
+        }
+
+        function commentRepliedDialogClose() {
+            commentRepliedDialog.value = false;
+            for (let i = 0; i < blogCommentRepliedVOList.length; i++) {
+                blogCommentRepliedVOList.pop();
+            }
+            commentRepliedPageNum.value = 0;
+        }
+
+
         return {
             blogCommentVOList,
             blogVO,
             getBlogCommentVOList,
+            showCommentArea,
+            openOrCloseCommentArea,
+            loadMoreComments,
+            commentRepliedDialog,
+            setCommentRepliedDialogVisible,
+            blogCommentRepliedVOList,
+            CommentRepliedDialogClose: commentRepliedDialogClose,
+            commentPageNum,
+            commentRepliedPageNum,
         };
     },
 };

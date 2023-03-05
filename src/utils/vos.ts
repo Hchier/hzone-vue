@@ -24,6 +24,7 @@ export type BlogVO = {
 export type BlogCommentVO = {
     id: number,
     publisher: string,
+    receiver: string,
     blogId: number,
     content: string,
     commentNum: number,

@@ -1,8 +1,8 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, {AxiosRequestConfig} from "axios";
 import router from "@/router";
-import { RestResponse } from "@/utils/vos";
+import {RestResponse} from "@/utils/vos";
 
-export const get = function(url: string) {
+export const get = function (url: string) {
     const query: AxiosRequestConfig<object> = {
         url: url,
         method: "get",
@@ -17,7 +17,7 @@ export const get = function(url: string) {
     return request(query);
 };
 
-export const postWithoutJson = function(url: string, param: object) {
+export const postWithoutJson = function (url: string, param: object) {
     const query: AxiosRequestConfig<object> = {
         url: url,
         method: "post",
@@ -32,7 +32,7 @@ export const postWithoutJson = function(url: string, param: object) {
     return request(query);
 };
 
-export const post = function(url: string) {
+export const post = function (url: string) {
     const query: AxiosRequestConfig<object> = {
         url: url,
         method: "post",
@@ -47,17 +47,16 @@ export const post = function(url: string) {
     return request(query);
 };
 
-const request = function(query: object) {
+const request = function (query: object) {
     return axios
         .request(query)
         .then((res: any) => {
-            console.log(res);
-            if (res.data.code == 416) {
-                router.push({ path: "/login" });
+            if (res.data.code === 416) {
+                router.push({path: "/login"});
             }
             return res;
         })
         .catch((e: any) => {
-            console.log(e);
+            console.log("err: " + e);
         });
 };

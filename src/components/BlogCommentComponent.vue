@@ -1,26 +1,40 @@
 <template>
     <div id="BlogComment">
-        <el-avatar id="avatar" :size="50" :src=" blogCommentVO.publisher" />
-        <span id="publisher">{{ blogCommentVO.publisher }}</span>
+        <el-avatar id="avatar" :size="50" :src=" blogCommentVO.publisher"/>
+        <div id="publisher">
+            <span>{{ blogCommentVO.publisher }}</span><span
+            v-show="blogCommentVO.receiver !== ''"> 回复 {{ blogCommentVO.receiver }}</span>
+        </div>
         <span id="content">{{ blogCommentVO.content }}</span>
-        <el-button id="button" type="danger" v-show="blogCommentVO.deletePermission"
-                   @click="deleteComment(blogCommentVO.id,blogCommentVO.blogId)">删除
-        </el-button>
-        <el-button id="button" type="danger" v-show="hiddenPermission">隐藏</el-button>
-        <el-button id="button" type="primary" v-show="hiddenPermission">查看回复({{ blogCommentVO.commentNum }})
-        </el-button>
+
         <span id="createTime">{{ blogCommentVO.createTime }}</span>
+
+        <el-popover placement="right" :width="400" trigger="hover">
+            <template #reference>
+                <el-button style="margin-right: 16px">操作</el-button>
+            </template>
+            <el-button id="button" type="danger" v-show="blogCommentVO.deletePermission"
+                       @click="deleteComment(blogCommentVO.id,blogCommentVO.blogId)">删除
+            </el-button>
+            <el-button id="button" type="danger" v-show="hiddenPermission">隐藏</el-button>
+            <el-button id="button" type="primary" @click="setCommentRepliedDialogVisible" v-show="moreRepliesButtonVisible">
+                查看回复({{ blogCommentVO.commentNum }})
+            </el-button>
+        </el-popover>
     </div>
+
 </template>
 
 <script lang="ts">
 import BlogCommentApis from "@/apis/BlogCommentApis";
-import { ElMessage } from "element-plus";
+import {ElMessage} from "element-plus";
+import {ref, SetupContext} from "vue";
 
 export default {
     name: "BlogComment",
-    props: ["blogCommentVO", "hiddenPermission"],
-    setup() {
+    props: ["blogCommentVO", "hiddenPermission", "moreRepliesButtonVisible"],
+    emits: ["setCommentRepliedDialogVisible"],
+    setup(this: void, props: unknown, context: SetupContext) {
         function deleteComment(commentId: number, blogId: number) {
             BlogCommentApis.delete(commentId, blogId).then(res => {
                 if (res.data.code == 200) {
@@ -31,8 +45,13 @@ export default {
             });
         }
 
+        function setCommentRepliedDialogVisible() {
+            context.emit("setCommentRepliedDialogVisible");
+        }
+
         return {
             deleteComment,
+            setCommentRepliedDialogVisible,
         };
     },
 };
@@ -65,7 +84,7 @@ export default {
     margin-left: 10px;
     float: left;
     border: red 1px solid;
-    width: 100px;
+    width: 200px;
     height: 20px;
 }
 
