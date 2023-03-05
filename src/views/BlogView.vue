@@ -28,10 +28,10 @@ import {reactive, ref} from "vue";
 import BlogComment from "@/components/BlogCommentComponent.vue";
 import Blog from "@/components/BlogComponent.vue";
 import {BlogCommentVO, BlogVO} from "@/utils/vos";
-import BlogApis from "@/apis/BlogApis";
+import BlogApis from "@/common/apis/BlogApis";
 import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
-import blogCommentApis from "@/apis/BlogCommentApis";
+import blogCommentApis from "@/common/apis/BlogCommentApis";
 import {Ref, UnwrapRef} from "@vue/reactivity";
 
 export default {

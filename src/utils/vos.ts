@@ -29,6 +29,8 @@ export type BlogCommentVO = {
     content: string,
     commentNum: number,
     favorNum: number, //砍了
+    baseComment: number,
+    commentOf: number,
     currentUser: string
     createTime: Date,
     deletePermission: boolean

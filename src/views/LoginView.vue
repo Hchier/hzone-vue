@@ -24,8 +24,8 @@
 
 <script lang="ts">
 import { reactive } from "vue";
-import { UserLoginDTO } from "@/utils/dtos";
-import UserApis from "@/apis/UserApis";
+import { UserLoginDTO } from "@/common/dtos/UserDTOs";
+import UserApis from "@/common/apis/UserApis";
 import { ElMessage } from "element-plus";
 
 export default {

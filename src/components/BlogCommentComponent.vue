@@ -1,12 +1,11 @@
 <template>
-    <div id="BlogComment">
+    <div id="BlogComment" v-show="visible">
         <el-avatar id="avatar" :size="50" :src=" blogCommentVO.publisher"/>
         <div id="publisher">
             <span>{{ blogCommentVO.publisher }}</span><span
             v-show="blogCommentVO.receiver !== ''"> 回复 {{ blogCommentVO.receiver }}</span>
         </div>
         <span id="content">{{ blogCommentVO.content }}</span>
-
         <span id="createTime">{{ blogCommentVO.createTime }}</span>
 
         <el-popover placement="right" :width="400" trigger="hover">
@@ -14,10 +13,12 @@
                 <el-button style="margin-right: 16px">操作</el-button>
             </template>
             <el-button id="button" type="danger" v-show="blogCommentVO.deletePermission"
-                       @click="deleteComment(blogCommentVO.id,blogCommentVO.blogId)">删除
+                       @click="deleteComment(blogCommentVO.receiver, blogCommentVO.id,blogCommentVO.blogId, blogCommentVO.baseComment,blogCommentVO.commentOf)">
+                删除
             </el-button>
             <el-button id="button" type="danger" v-show="hiddenPermission">隐藏</el-button>
-            <el-button id="button" type="primary" @click="setCommentRepliedDialogVisible" v-show="moreRepliesButtonVisible">
+            <el-button id="button" type="primary" @click="setCommentRepliedDialogVisible"
+                       v-show="moreRepliesButtonVisible">
                 查看回复({{ blogCommentVO.commentNum }})
             </el-button>
         </el-popover>
@@ -26,25 +27,45 @@
 </template>
 
 <script lang="ts">
-import BlogCommentApis from "@/apis/BlogCommentApis";
+import BlogCommentApis from "@/common/apis/BlogCommentApis";
 import {ElMessage} from "element-plus";
 import {ref, SetupContext} from "vue";
+import {BlogCommentDeleteDTO} from "@/common/dtos/BlogCommentDTOs";
 
 export default {
     name: "BlogComment",
     props: ["blogCommentVO", "hiddenPermission", "moreRepliesButtonVisible"],
     emits: ["setCommentRepliedDialogVisible"],
     setup(this: void, props: unknown, context: SetupContext) {
-        function deleteComment(commentId: number, blogId: number) {
-            BlogCommentApis.delete(commentId, blogId).then(res => {
+        //被删除后设为true
+        let visible = ref(true);
+
+        function deleteComment(
+            receiver: string,
+            id: number,
+            blogId: number,
+            baseComment: number,
+            commentOf: number) {
+
+            let blogCommentDeleteDTO: BlogCommentDeleteDTO = {
+                receiver: receiver,
+                id: id,
+                blogId: blogId,
+                baseComment: baseComment,
+                commentOf: commentOf,
+            };
+
+            BlogCommentApis.delete(blogCommentDeleteDTO).then(res => {
                 if (res.data.code == 200) {
                     ElMessage.success("删除成功");
+                    visible.value = false;
                 } else {
-                    ElMessage.error("删除失败");
+                    ElMessage.error("删除失败: " + res.data.message);
                 }
             });
         }
 
+        //当查看评论的回复时，像父组件发送事件，把对应的dialog设为可见。
         function setCommentRepliedDialogVisible() {
             context.emit("setCommentRepliedDialogVisible");
         }
@@ -52,6 +73,7 @@ export default {
         return {
             deleteComment,
             setCommentRepliedDialogVisible,
+            visible,
         };
     },
 };
