@@ -3,8 +3,8 @@
 </template>
 
 <script lang="ts">
-import { onMounted } from "vue";
-import { BlogVO } from "@/utils/vos";
+import {onMounted} from "vue";
+import {BlogVO} from "@/common/vos/BlogVO";
 
 export default {
     props: ["blogVO"],
