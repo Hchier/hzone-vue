@@ -11,7 +11,7 @@ import {ElMessage} from "element-plus";
 export default defineComponent({
     name: "ReplyComponent",
     props: ["blogCommentPublishDTO"],
-    emits: ["commentPublishSuccessEmit"],
+    emits: ["blogCommentRepliedPublishSuccessEmit", "blogCommentPublishSuccessEmit"],
     setup(props, context) {
 
         let content = ref("");
@@ -26,10 +26,14 @@ export default defineComponent({
                     Object.assign(props.blogCommentPublishDTO, {
                         content: content.value,
                     });
-                    context.emit("commentPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as Date);
+                    if (props.blogCommentPublishDTO.baseComment !== -1) {
+                        context.emit("blogCommentRepliedPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as Date);
+                    } else {
+                        context.emit("blogCommentPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as Date);
+                    }
                     content.value = "";
                 } else {
-                    ElMessage.error("发布失败：" + res.data.body);
+                    ElMessage.error("发布失败：" + res.data.message);
                 }
             });
         }

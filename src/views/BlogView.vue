@@ -6,7 +6,7 @@
                      v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
                      v-bind:moreRepliesButtonVisible="true"
                      @setCommentRepliedDialogVisibleEmit="setCommentRepliedDialogVisible(item.id)"
-                     @commentPublishSuccessEmit="commentPublishSuccess"></BlogComment>
+                     @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></BlogComment>
     </div>
     <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)">更多评论</el-button>
 
@@ -20,14 +20,18 @@
             </BlogComment>
         </div>
         <el-button type="primary"
-                   @click="loadMoreComments(item.id,blogCommentRepliedVOList)">更多评论
+                   @click="loadMoreComments(blogCommentRepliedVOList[0].id,blogCommentRepliedVOList)">更多评论
         </el-button>
     </el-dialog>
+
+    <ReplyComponent :blogCommentPublishDTO="blogCommentPublishDTO"
+                    @blogCommentPublishSuccessEmit="blogCommentPublishSuccess"></ReplyComponent>
 </template>
 
 <script lang="ts">
-import {reactive, ref} from "vue";
+import {defineComponent, reactive, ref} from "vue";
 import BlogComment from "@/components/BlogCommentComponent.vue";
+import ReplyComponent from "@/components/ReplyComponent.vue";
 import Blog from "@/components/BlogComponent.vue";
 import {BlogCommentVO} from "@/common/vos/BlogCommentVO";
 import {BlogVO} from "@/common/vos/BlogVO";
@@ -36,13 +40,14 @@ import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
 import blogCommentApis from "@/common/apis/BlogCommentApis";
 import {Ref, UnwrapRef} from "@vue/reactivity";
-import {BlogCommentGetDTO} from "@/common/dtos/BlogCommentDTOs";
+import {BlogCommentGetDTO, BlogCommentPublishDTO} from "@/common/dtos/BlogCommentDTOs";
 
-export default {
+export default defineComponent({
     name: "HomeView",
     components: {
         Blog,
         BlogComment,
+        ReplyComponent,
     },
 
     setup() {
@@ -96,6 +101,9 @@ export default {
                     blogVO.updateTime = vo.updateTime;
                     blogVO.topic = vo.topic;
                     blogVO.updatePermission = vo.updatePermission;
+
+                    blogCommentPublishDTO.blogId = vo.id;
+                    blogCommentPublishDTO.receiver = vo.publisher;
                 } else {
                     ElMessage.error("查找博客失败：" + res.data.body);
                 }
@@ -129,10 +137,10 @@ export default {
                         return;
                     }
                     arr.forEach(value => {
-
                         if (value.hidden) {
                             value.content = "该评论已被隐藏。";
                         }
+
                         list.push(value);
                     });
                 } else {
@@ -175,15 +183,38 @@ export default {
             commentRepliedPageNum.value = 0;
         }
 
-        let commentPublishSuccess = (blogCommentVO: BlogCommentVO) => {
-            if (blogCommentVO.baseComment === -1) {
-                blogCommentVOList.push(blogCommentVO);
-                blogVO.commentNum++;
-            } else {
-                blogCommentRepliedVOList.push(blogCommentVO);
-            }
+        let blogCommentRepliedPublishSuccess = (blogCommentVO: BlogCommentVO) => {
+            blogCommentRepliedVOList.push(blogCommentVO);
+            blogVO.commentNum++;
         };
 
+        let blogCommentPublishSuccess = (commentId: number, publisher: string, createTime: Date) => {
+            let blogCommentVO: BlogCommentVO = {
+                id: commentId,
+                publisher: publisher,
+                receiver: blogCommentPublishDTO.receiver,
+                blogId: blogCommentPublishDTO.blogId,
+                content: blogCommentPublishDTO.content,
+                commentNum: 0,
+                favorNum: 0,
+                hidden: false,
+                baseComment: blogCommentPublishDTO.baseComment,
+                commentOf: blogCommentPublishDTO.commentOf,
+                currentUser: publisher,
+                createTime: createTime,
+                deletePermission: true,
+            };
+            blogCommentVOList.push(blogCommentVO);
+            blogVO.commentNum++;
+        };
+
+        let blogCommentPublishDTO: BlogCommentPublishDTO = reactive({
+            receiver: blogVO.publisher,
+            blogId: blogVO.id,
+            content: "",
+            baseComment: -1,
+            commentOf: -1,
+        });
 
         return {
             blogCommentVOList,
@@ -198,8 +229,10 @@ export default {
             CommentRepliedDialogClose: commentRepliedDialogClose,
             commentPageNum,
             commentRepliedPageNum,
-            commentPublishSuccess,
+            blogCommentRepliedPublishSuccess,
+            blogCommentPublishDTO,
+            blogCommentPublishSuccess
         };
     },
-};
+});
 </script>

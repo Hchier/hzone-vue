@@ -18,6 +18,5 @@ module.exports = {
         "no-empty": "off",
         indent: ["error", 4],
         "prettier/prettier": "off",
-        "no-mutating-props": "off",
     },
 };

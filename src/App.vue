@@ -1,5 +1,5 @@
 <template>
-    
+
     <el-container>
         <el-header id="header">
             <router-link to="/">Home</router-link>
@@ -7,9 +7,13 @@
             <router-link to="/blog">blog</router-link>
             |
             <router-link to="/login">login</router-link>
+            |
+            <el-badge :value="200" :max="99" class="item">
+                <router-link to="/notice">notice</router-link>
+            </el-badge>
         </el-header>
         <el-main>
-            <router-view />
+            <router-view/>
         </el-main>
         <el-footer id="footer">Footer</el-footer>
     </el-container>
@@ -35,7 +39,7 @@
     }
 }
 
-#footer{
+#footer {
     position: fixed;
     bottom: 0;
     display: block;

@@ -30,7 +30,7 @@
         </el-popover>
 
         <ReplyComponent v-bind:blogCommentPublishDTO="blogCommentPublishDTO" v-if="replyAreaVisible"
-                        @commentPublishSuccessEmit="commentPublishSuccess"></ReplyComponent>
+                        @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccessEmit"></ReplyComponent>
     </div>
 
 </template>
@@ -109,7 +109,7 @@ export default defineComponent({
             commentOf: props.blogCommentVO.id,
         });
 
-        let commentPublishSuccess = (commentId: number, publisher: string, createTime: Date) => {
+        let blogCommentRepliedPublishSuccessEmit = (commentId: number, publisher: string, createTime: Date) => {
             let blogCommentVO: BlogCommentVO = {
                 id: commentId,
                 publisher: publisher,
@@ -125,6 +125,9 @@ export default defineComponent({
                 createTime: createTime,
                 deletePermission: true,
             };
+            Object.assign(props.blogCommentVO, {
+                commentNum: props.blogCommentVO.commentNum + 1,
+            });
             context.emit("commentPublishSuccessEmit", blogCommentVO);
         };
 
@@ -135,7 +138,7 @@ export default defineComponent({
             hiddenComment,
             blogCommentPublishDTO,
             replyAreaVisible,
-            commentPublishSuccess,
+            blogCommentRepliedPublishSuccessEmit,
         };
     },
 });
