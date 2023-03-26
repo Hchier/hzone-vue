@@ -1,5 +1,5 @@
 <template>
-    <div id="father" v-show="blogVisible">
+    <div id="father">
         <Blog v-bind:blogVO="blogVO" v-bind:autoUnfold="true"></Blog>
 
         <el-button type="primary" @click="openOrCloseCommentArea">评论({{ blogVO.commentNum }})</el-button>
@@ -59,8 +59,6 @@ export default defineComponent({
     },
 
     setup() {
-        let blogVisible = ref(false);
-
         let blogVO: BlogVO = reactive({
             id: -1,
             publisher: "xxx",
@@ -115,7 +113,6 @@ export default defineComponent({
                     blogCommentPublishDTO.blogId = vo.id;
                     blogCommentPublishDTO.receiver = vo.publisher;
 
-                    blogVisible.value = true;
                 } else {
                     ElMessage.error(res.data.message);
                 }
@@ -229,7 +226,6 @@ export default defineComponent({
         });
 
         return {
-            blogVisible,
             blogCommentVOList,
             blogVO,
             getBlogCommentVOList: getCommentVOList,

@@ -14,6 +14,8 @@
 
         <el-button id="unfoldButton" type="primary" @click="unfold" v-show="foldStatus">展开</el-button>
 
+        <a id="topic" href="">{{ blogVO.topic }}</a>
+
         <p id="updateTime">发布于 {{ blogVO.updateTime }}</p>
 
         <div id="favorButton">
@@ -113,6 +115,12 @@ export default defineComponent({
     margin: -5px 30px 0 0;
 }
 
+#topic{
+    float: left;
+    margin: -22px 0 0 20px;
+    color: #409eff;
+}
+
 #updateTime {
     float: left;
     margin: 5px 0 0 20px;
@@ -122,7 +130,7 @@ export default defineComponent({
 
 #favorButton {
     float: left;
-    margin: 40px 0px 10px -170px;
+    margin: 30px 0px 10px -170px;
 }
 
 </style>

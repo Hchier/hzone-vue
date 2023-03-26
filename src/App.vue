@@ -33,7 +33,7 @@ export default defineComponent({
 
         function loginSuccess(username: string) {
             loggedIn.value = true;
-            router.push({path: "/home"});
+            router.push({path: "/"});
         }
 
         function checkLoginStatus() {
