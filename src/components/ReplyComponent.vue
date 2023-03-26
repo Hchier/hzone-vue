@@ -1,6 +1,8 @@
 <template>
-    <el-input v-model="content"></el-input>
-    <el-button type="primary" @click="publishComment">提交</el-button>
+    <div>
+        <el-input v-model="content"></el-input>
+        <el-button id="publishButton" type="primary" @click="publishComment">提交</el-button>
+    </div>
 </template>
 
 <script lang="ts">
@@ -27,9 +29,9 @@ export default defineComponent({
                         content: content.value,
                     });
                     if (props.blogCommentPublishDTO.baseComment !== -1) {
-                        context.emit("blogCommentRepliedPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as Date);
+                        context.emit("blogCommentRepliedPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as string);
                     } else {
-                        context.emit("blogCommentPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as Date);
+                        context.emit("blogCommentPublishSuccessEmit", res.data.body.id as number, res.data.body.publisher as string, res.data.body.createTime as string);
                     }
                     content.value = "";
                 } else {
@@ -47,5 +49,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+#publishButton {
+    float: right;
+}
 </style>

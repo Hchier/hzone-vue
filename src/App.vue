@@ -2,23 +2,65 @@
 
     <el-container>
         <el-header id="header">
-            <router-link to="/">Home</router-link>
+            <router-link to="/">首页</router-link>
             |
-            <router-link to="/blog">blog</router-link>
+            <router-link to="/zone" v-show="loggedIn">个人空间</router-link>
             |
-            <router-link to="/login">login</router-link>
+            <router-link to="/login" v-show="!loggedIn">登录</router-link>
             |
             <el-badge :value="200" :max="99" class="item">
-                <router-link to="/notice">notice</router-link>
+                <router-link to="/notice">通知</router-link>
             </el-badge>
+            |
+            <router-link to="/" v-show="loggedIn">登出</router-link>
         </el-header>
         <el-main>
-            <router-view/>
+            <router-view @loginSuccessEmit="loginSuccess"/>
         </el-main>
         <el-footer id="footer">Footer</el-footer>
     </el-container>
 
 </template>
+
+<script lang="ts">
+
+import {defineComponent, ref} from "vue";
+import router from "@/router";
+
+export default defineComponent({
+    setup() {
+        let loggedIn = ref(false);
+
+        function loginSuccess(username: string) {
+            loggedIn.value = true;
+            router.push({path: "/home"});
+        }
+
+        function checkLoginStatus() {
+            if (document.cookie.length > 0) {
+                let arr = document.cookie.split('; ');//注意：分号+空格
+                for (let i = 0; i < arr.length; i++) {
+                    let index = arr[i].indexOf("=");
+                    console.log(arr[i].substring(0, index));
+                    if (arr[i].substring(0, index) === "token") {
+                        loggedIn.value = true;
+                        return;
+                    }
+                }
+            }
+            loggedIn.value = false;
+        }
+
+        checkLoginStatus();
+
+        return {
+            loginSuccess,
+            loggedIn,
+        };
+    },
+});
+
+</script>
 
 <style lang="scss">
 #app {

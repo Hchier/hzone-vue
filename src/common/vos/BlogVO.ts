@@ -10,7 +10,7 @@ export type BlogVO = {
     selfVisible: boolean,
     hidden: boolean,
     commentForbidden: boolean,
-    updateTime: Date,
+    updateTime: string,
     topic: string,
     updatePermission: boolean,
 }

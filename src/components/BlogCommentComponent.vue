@@ -1,36 +1,37 @@
 <template>
-    <div id="BlogComment" v-show="visible">
-        <el-avatar id="avatar" :size="50" :src=" blogCommentVO.publisher"/>
-        <div id="publisher">
+    <div id="BlogComment" class="clear" v-show="visible">
+        <el-avatar id="avatar" :size="50" :src="blogCommentVO.publisher"/>
+        <span id="publisher">
             <span>{{ blogCommentVO.publisher }}</span><span
             v-show="blogCommentVO.receiver !== ''"> 回复 {{ blogCommentVO.receiver }}</span>
-        </div>
+        </span>
         <span id="content">{{ blogCommentVO.content }}</span>
-        <span id="createTime">{{ blogCommentVO.createTime }}</span>
+        <p id="createTime">发布于 {{ blogCommentVO.createTime }}</p>
 
-        <el-popover placement="right" :width="400" trigger="hover">
+        <el-popover placement="right" :width="300" trigger="hover">
             <template #reference>
-                <el-button style="margin-right: 16px">操作</el-button>
+                <el-button id="opButton" type="primary">操作</el-button>
             </template>
-            <el-button id="button" type="danger" v-show="blogCommentVO.deletePermission"
-                       @click="deleteComment(blogCommentVO.receiver, blogCommentVO.id,blogCommentVO.blogId, blogCommentVO.baseComment,blogCommentVO.commentOf)">
+            <el-button
+                id="deleteButton"
+                type="danger" v-show="blogCommentVO.deletePermission"
+                @click="deleteComment(blogCommentVO.receiver, blogCommentVO.id,blogCommentVO.blogId, blogCommentVO.baseComment,blogCommentVO.commentOf)">
                 删除
             </el-button>
-            <el-button id="button" type="danger" v-show="hiddenPermission && !blogCommentVO.hidden"
+            <el-button id="hiddenButton" type="danger" v-show="hiddenPermission && !blogCommentVO.hidden"
                        @click="hiddenComment(blogCommentVO.blogId,blogCommentVO.id)">
                 隐藏
             </el-button>
-            <el-button id="button" type="success" @click="replyAreaVisible = true">
+            <el-button id="replyButton" type="success" @click="replyAreaVisible = true">
                 回复
             </el-button>
-            <el-button id="button" type="primary" @click="setCommentRepliedDialogVisible"
+            <el-button id="reviewRepliesButton" type="primary" @click="setCommentRepliedDialogVisible"
                        v-show="moreRepliesButtonVisible">
                 查看回复({{ blogCommentVO.commentNum }})
             </el-button>
         </el-popover>
-
         <ReplyComponent v-bind:blogCommentPublishDTO="blogCommentPublishDTO" v-if="replyAreaVisible"
-                        @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccessEmit"></ReplyComponent>
+                        @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></ReplyComponent>
     </div>
 
 </template>
@@ -52,8 +53,9 @@ export default defineComponent({
     props: ["blogCommentVO", "hiddenPermission", "moreRepliesButtonVisible"],
     emits: ["setCommentRepliedDialogVisibleEmit", "commentPublishSuccessEmit"],
     setup(props, context) {
-        //被删除后设为true
+        //被删除后设为false
         let visible = ref(true);
+        let vo: BlogCommentVO = reactive(props.blogCommentVO);
 
         function deleteComment(
             receiver: string,
@@ -109,7 +111,7 @@ export default defineComponent({
             commentOf: props.blogCommentVO.id,
         });
 
-        let blogCommentRepliedPublishSuccessEmit = (commentId: number, publisher: string, createTime: Date) => {
+        let blogCommentRepliedPublishSuccess = (commentId: number, publisher: string, createTime: string) => {
             let blogCommentVO: BlogCommentVO = {
                 id: commentId,
                 publisher: publisher,
@@ -138,7 +140,7 @@ export default defineComponent({
             hiddenComment,
             blogCommentPublishDTO,
             replyAreaVisible,
-            blogCommentRepliedPublishSuccessEmit,
+            blogCommentRepliedPublishSuccess,
         };
     },
 });
@@ -146,57 +148,57 @@ export default defineComponent({
 
 <style scoped>
 
-
-#BlogComment {
-    border: red 1px solid;
-    overflow: hidden;
-    width: 750px;
-    min-height: 90px;
+.clear::before, .clear::after {
+    content: '';
+    display: table;
+    clear: both;
 }
 
+#BlogComment {
+    position: relative;
+    border: red 1px solid;
+    overflow: hidden;
+    width: 700px;
+
+}
 
 #avatar {
-    display: inline-block;
-    margin-top: 20px;
-    margin-left: 10px;
-    float: left;
+    position: absolute;
+    top: 10px;
+    left: 10px;
     border: red 1px solid;
-    width: 50px;
-    height: 50px;
 }
 
 #publisher {
-    display: inline-block;
-    margin-top: 20px;
-    margin-left: 10px;
-    float: left;
+    position: absolute;
+    top: 10px;
+    left: 80px;
     border: red 1px solid;
-    width: 200px;
-    height: 20px;
+
+}
+
+#opButton {
+    position: absolute;
+    left: 620px;
+    top: 10px;
 }
 
 #content {
-    margin: 10px auto auto 10px;
-    display: inline-block;
     float: left;
+    margin-top: 50px;
+    margin-left: 80px;
     border: red 1px solid;
     width: 600px;
     overflow-wrap: break-word;
     text-align: left;
 }
 
-#button {
-    margin: auto 10px 10px;
-    display: inline-block;
-    float: right;
-    overflow-wrap: break-word;
-    text-align: left;
-}
-
 #createTime {
-    display: inline-block;
     float: left;
-    margin-left: 70px;
+    margin-top: 10px;
+    margin-left: 80px;
+    font-size: 10px;
+    color: #8590a6;
 }
 
 </style>

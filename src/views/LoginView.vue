@@ -7,10 +7,10 @@
         style="max-width: 460px; margin: auto"
     >
         <el-form-item label="username: ">
-            <el-input v-model="userLoginDto.username" />
+            <el-input v-model="userLoginDto.username"/>
         </el-form-item>
         <el-form-item label="password: ">
-            <el-input v-model="userLoginDto.password" />
+            <el-input v-model="userLoginDto.password"/>
         </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="login">
@@ -23,14 +23,15 @@
 </template>
 
 <script lang="ts">
-import { reactive } from "vue";
-import { UserLoginDTO } from "@/common/dtos/UserDTOs";
+import {defineComponent, reactive} from "vue";
+import {UserLoginDTO} from "@/common/dtos/UserDTOs";
 import UserApis from "@/common/apis/UserApis";
-import { ElMessage } from "element-plus";
+import {ElMessage} from "element-plus";
 
-export default {
+export default defineComponent({
     name: "LoginView",
-    setup() {
+    emits: ["loginSuccessEmit"],
+    setup(props, context) {
         let userLoginDto: UserLoginDTO = reactive({
             username: "",
             password: "",
@@ -46,6 +47,7 @@ export default {
             UserApis.login(userLoginDto).then(res => {
                 if (res.data.code === 200) {
                     ElMessage.success("登录成功");
+                    context.emit("loginSuccessEmit", userLoginDto.username);
                 } else {
                     ElMessage.error("登录失败：" + res.data.body);
                 }
@@ -58,7 +60,7 @@ export default {
             login,
         };
     },
-};
+});
 </script>
 
 <style scoped>

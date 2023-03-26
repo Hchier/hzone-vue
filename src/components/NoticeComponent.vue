@@ -15,7 +15,9 @@
             有了新的回复：{{ noticeVO.content}}
         </span>
         <span v-else-if="noticeVO.type === 4">
-            您的评论被回复了：{{ noticeVO.content}}
+            您在
+            <a v-bind:href="'/blog/'+href">博客</a>
+            下的评论被回复了：{{ noticeVO.content}}
         </span>
         <span  v-else-if="noticeVO.type === 5">
             您的空间新增了留言：{{noticeVO.content}}

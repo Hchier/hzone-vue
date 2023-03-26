@@ -11,7 +11,7 @@ export type BlogCommentVO = {
     baseComment: number,
     commentOf: number,
     currentUser: string
-    createTime: Date,
+    createTime: string,
     deletePermission: boolean
 };
 

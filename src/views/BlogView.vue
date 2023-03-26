@@ -1,37 +1,45 @@
 <template>
-    <Blog v-bind:blogVO="blogVO"></Blog>
-    <el-button type="primary" @click="openOrCloseCommentArea">评论({{ blogVO.commentNum }})</el-button>
-    <div v-for="(item) in blogCommentVOList" v-bind:key="item.id" v-show="showCommentArea" style="margin: auto">
-        <BlogComment v-bind:blogCommentVO="item"
-                     v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
-                     v-bind:moreRepliesButtonVisible="true"
-                     @setCommentRepliedDialogVisibleEmit="setCommentRepliedDialogVisible(item.id)"
-                     @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></BlogComment>
-    </div>
-    <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)">更多评论</el-button>
+    <div id="father" v-show="blogVisible">
+        <Blog v-bind:blogVO="blogVO" v-bind:autoUnfold="true"></Blog>
 
-    <el-dialog v-model="commentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose">
-        <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
-             style="margin: auto">
-            <BlogComment v-bind:blogCommentVO="item"
-                         v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
-                         v-bind:moreRepliesButtonVisible="false"
-                         @commentPublishSuccessEmit="commentPublishSuccess">
-            </BlogComment>
+        <el-button type="primary" @click="openOrCloseCommentArea">评论({{ blogVO.commentNum }})</el-button>
+
+        <div v-for="(item) in blogCommentVOList" v-bind:key="item.id" v-show="showCommentArea">
+            <BlogComment
+                style="margin: auto"
+                v-bind:blogCommentVO="item"
+                v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
+                v-bind:moreRepliesButtonVisible="true"
+                @setCommentRepliedDialogVisibleEmit="setCommentRepliedDialogVisible(item.id)"
+                @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></BlogComment>
         </div>
-        <el-button type="primary"
-                   @click="loadMoreComments(blogCommentRepliedVOList[0].id,blogCommentRepliedVOList)">更多评论
+        <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)" v-show="showCommentArea">更多评论
         </el-button>
-    </el-dialog>
 
-    <ReplyComponent :blogCommentPublishDTO="blogCommentPublishDTO"
-                    @blogCommentPublishSuccessEmit="blogCommentPublishSuccess"></ReplyComponent>
+        <el-dialog v-model="commentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose"
+                   style="width: 750px">
+            <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
+                 style="margin: auto">
+                <BlogComment v-bind:blogCommentVO="item"
+                             v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
+                             v-bind:moreRepliesButtonVisible="false"
+                             @commentPublishSuccessEmit="blogCommentRepliedPublishSuccess">
+                </BlogComment>
+            </div>
+            <el-button type="primary"
+                       @click="loadMoreComments(blogCommentRepliedVOList[0].id,blogCommentRepliedVOList)">更多评论
+            </el-button>
+        </el-dialog>
+
+        <Reply id="replyComponent" :blogCommentPublishDTO="blogCommentPublishDTO" v-if="showCommentArea"
+               @blogCommentPublishSuccessEmit="blogCommentPublishSuccess"></Reply>
+    </div>
 </template>
 
 <script lang="ts">
 import {defineComponent, reactive, ref} from "vue";
 import BlogComment from "@/components/BlogCommentComponent.vue";
-import ReplyComponent from "@/components/ReplyComponent.vue";
+import Reply from "@/components/ReplyComponent.vue";
 import Blog from "@/components/BlogComponent.vue";
 import {BlogCommentVO} from "@/common/vos/BlogCommentVO";
 import {BlogVO} from "@/common/vos/BlogVO";
@@ -47,10 +55,12 @@ export default defineComponent({
     components: {
         Blog,
         BlogComment,
-        ReplyComponent,
+        Reply,
     },
 
     setup() {
+        let blogVisible = ref(false);
+
         let blogVO: BlogVO = reactive({
             id: -1,
             publisher: "xxx",
@@ -63,7 +73,7 @@ export default defineComponent({
             selfVisible: false,
             hidden: false,
             commentForbidden: false,
-            updateTime: new Date(),
+            updateTime: "",
             topic: "",
             updatePermission: false,
         });
@@ -84,7 +94,7 @@ export default defineComponent({
             }
 
             BlogApis.getBlog(id).then(res => {
-                if (res.data.code == 200) {
+                if (res.data.code === 200) {
                     ElMessage.success("查找博客成功");
                     let vo = res.data.body as BlogVO;
                     blogVO.id = vo.id;
@@ -104,8 +114,10 @@ export default defineComponent({
 
                     blogCommentPublishDTO.blogId = vo.id;
                     blogCommentPublishDTO.receiver = vo.publisher;
+
+                    blogVisible.value = true;
                 } else {
-                    ElMessage.error("查找博客失败：" + res.data.body);
+                    ElMessage.error(res.data.message);
                 }
             });
         }
@@ -140,7 +152,7 @@ export default defineComponent({
                         if (value.hidden) {
                             value.content = "该评论已被隐藏。";
                         }
-
+                        console.log(value);
                         list.push(value);
                     });
                 } else {
@@ -188,7 +200,7 @@ export default defineComponent({
             blogVO.commentNum++;
         };
 
-        let blogCommentPublishSuccess = (commentId: number, publisher: string, createTime: Date) => {
+        let blogCommentPublishSuccess = (commentId: number, publisher: string, createTime: string) => {
             let blogCommentVO: BlogCommentVO = {
                 id: commentId,
                 publisher: publisher,
@@ -217,6 +229,7 @@ export default defineComponent({
         });
 
         return {
+            blogVisible,
             blogCommentVOList,
             blogVO,
             getBlogCommentVOList: getCommentVOList,
@@ -231,8 +244,15 @@ export default defineComponent({
             commentRepliedPageNum,
             blogCommentRepliedPublishSuccess,
             blogCommentPublishDTO,
-            blogCommentPublishSuccess
+            blogCommentPublishSuccess,
         };
     },
 });
 </script>
+
+<style>
+#father {
+    margin: 0 auto;
+    width: 700px;
+}
+</style>
