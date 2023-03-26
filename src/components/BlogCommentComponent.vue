@@ -2,30 +2,29 @@
     <div id="BlogComment" class="clear" v-show="visible">
         <el-avatar id="avatar" :size="50" :src="blogCommentVO.publisher"/>
         <span id="publisher">
-            <span>{{ blogCommentVO.publisher }}</span><span
-            v-show="blogCommentVO.receiver !== ''"> 回复 {{ blogCommentVO.receiver }}</span>
+            <span>{{ blogCommentVO.publisher }}</span>
+            <span
+                v-show="blogCommentVO.baseComment !== -1"> 回复 {{ blogCommentVO.receiver }}</span>
         </span>
         <span id="content">{{ blogCommentVO.content }}</span>
         <p id="createTime">发布于 {{ blogCommentVO.createTime }}</p>
 
-        <el-popover placement="right" :width="300" trigger="hover">
+        <el-popover placement="right" trigger="hover">
             <template #reference>
                 <el-button id="opButton" type="primary">操作</el-button>
             </template>
-            <el-button
-                id="deleteButton"
-                type="danger" v-show="blogCommentVO.deletePermission"
-                @click="deleteComment(blogCommentVO.receiver, blogCommentVO.id,blogCommentVO.blogId, blogCommentVO.baseComment,blogCommentVO.commentOf)">
+            <el-button id="deleteButton" class="button" type="danger" v-show="blogCommentVO.deletePermission"
+                       @click="deleteComment(blogCommentVO.receiver, blogCommentVO.id,blogCommentVO.blogId, blogCommentVO.baseComment,blogCommentVO.commentOf)">
                 删除
             </el-button>
-            <el-button id="hiddenButton" type="danger" v-show="hiddenPermission && !blogCommentVO.hidden"
+            <el-button id="hiddenButton" class="button" type="danger" v-show="hiddenPermission && !blogCommentVO.hidden"
                        @click="hiddenComment(blogCommentVO.blogId,blogCommentVO.id)">
                 隐藏
             </el-button>
-            <el-button id="replyButton" type="success" @click="replyAreaVisible = true">
+            <el-button id="replyButton" class="button" type="success" @click="replyAreaVisible = true">
                 回复
             </el-button>
-            <el-button id="reviewRepliesButton" type="primary" @click="setCommentRepliedDialogVisible"
+            <el-button id="reviewRepliesButton" class="button" type="primary" @click="setCommentRepliedDialogVisible"
                        v-show="moreRepliesButtonVisible">
                 查看回复({{ blogCommentVO.commentNum }})
             </el-button>
@@ -181,6 +180,11 @@ export default defineComponent({
     position: absolute;
     left: 620px;
     top: 10px;
+}
+
+.button{
+    margin: 0;
+    display: block;
 }
 
 #content {
