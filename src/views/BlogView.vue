@@ -11,6 +11,7 @@ import {BlogVO} from "@/common/vos/BlogVO";
 import BlogApis from "@/common/apis/BlogApis";
 import {ElMessage} from "element-plus";
 import {useRoute} from "vue-router";
+import {deepCopy} from "@/utils/copy";
 
 export default defineComponent({
     name: "HomeView",
@@ -52,20 +53,8 @@ export default defineComponent({
                 if (res.data.code === 200) {
                     ElMessage.success("查找博客成功");
                     let vo = res.data.body as BlogVO;
-                    blogVO.id = vo.id;
-                    blogVO.publisher = vo.publisher;
-                    blogVO.title = vo.title;
-                    blogVO.content = vo.content;
-                    blogVO.favorNum = vo.favorNum;
-                    blogVO.commentNum = vo.commentNum;
-                    blogVO.rewardNum = vo.rewardNum;
-                    blogVO.favored = vo.favored;
-                    blogVO.selfVisible = vo.selfVisible;
-                    blogVO.hidden = vo.hidden;
-                    blogVO.commentForbidden = vo.commentForbidden;
-                    blogVO.updateTime = vo.updateTime;
-                    blogVO.topic = vo.topic;
-                    blogVO.updatePermission = vo.updatePermission;
+                    deepCopy(vo, blogVO);
+                    console.log(blogVO.id);
                 } else {
                     ElMessage.error(res.data.message);
                 }

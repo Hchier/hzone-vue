@@ -13,21 +13,28 @@
             <template #reference>
                 <el-button id="opButton" type="primary">操作</el-button>
             </template>
+
+            <el-button style="display: none"></el-button>
+
             <el-button id="deleteButton" class="button" type="danger" v-show="blogCommentVO.deletePermission"
                        @click="deleteComment(blogCommentVO.receiver, blogCommentVO.id,blogCommentVO.blogId, blogCommentVO.baseComment,blogCommentVO.commentOf)">
                 删除
             </el-button>
+
             <el-button id="hiddenButton" class="button" type="danger" v-show="hiddenPermission && !blogCommentVO.hidden"
                        @click="hiddenComment(blogCommentVO.blogId,blogCommentVO.id)">
                 隐藏
             </el-button>
+
             <el-button id="replyButton" class="button" type="success" @click="replyAreaVisible = true">
                 回复
             </el-button>
+
             <el-button id="reviewRepliesButton" class="button" type="primary" @click="setCommentRepliedDialogVisible"
                        v-show="moreRepliesButtonVisible">
                 查看回复({{ blogCommentVO.commentNum }})
             </el-button>
+
         </el-popover>
         <ReplyComponent v-bind:blogCommentPublishDTO="blogCommentPublishDTO" v-if="replyAreaVisible"
                         @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></ReplyComponent>
@@ -182,8 +189,8 @@ export default defineComponent({
     top: 10px;
 }
 
-.button{
-    margin: 0;
+.button {
+    margin: 0 0 10px;
     display: block;
 }
 

@@ -8,13 +8,13 @@
 
         <span id="publisher">{{ blogVO.publisher }}</span>
 
-        <span id="title"> <font size="5">{{ blogVO.title }}</font></span>
+        <a id="title" v-bind:href="'/blog/' + blogVO.id"> <font size="5">{{ blogVO.title }}</font></a>
+
+        <a id="topic" href="">{{ blogVO.topic }}</a>
 
         <div id="content">{{ blogVO.content }}</div>
 
         <el-button id="unfoldButton" type="primary" @click="unfold" v-show="foldStatus">展开</el-button>
-
-        <a id="topic" href="">{{ blogVO.topic }}</a>
 
         <p id="updateTime">发布于 {{ blogVO.updateTime }}</p>
 
@@ -87,91 +87,37 @@ export default defineComponent({
     },
     setup(props) {
         let content: string = ref(props.blogVO.content.substring(0, 100));
+        //内容是否折叠了
         let foldStatus = ref(true);
 
+        //展开内容
         function unfold() {
             let content: HTMLElement | null = document.getElementById("content");
             if (content !== null) {
+                foldStatus.value = false;
                 content.style.setProperty("height", "auto");
             }
         }
 
-        onMounted((() => {
-            if (props.autoUnfold) {
-                foldStatus.value = false;
-                unfold();
-            }
-        }));
-
-        let blogVO: BlogVO = reactive({
-            id: -1,
-            publisher: "xxx",
-            title: "",
-            content: "",
-            favorNum: 0,
-            commentNum: 0,
-            rewardNum: 0,
-            favored: false,
-            selfVisible: false,
-            hidden: false,
-            commentForbidden: false,
-            updateTime: "",
-            topic: "",
-            updatePermission: false,
-        });
         //博客的评论
         let blogCommentVOList: Array<BlogCommentVO> = reactive([]);
+        //是否展示评论区
         let showCommentArea = ref(false);
-
-        function getBlogVO() {
-            let idStr: string = useRoute().params.id as string;
-            let id: number;
-            if (((idStr != null) &&
-                (idStr !== '') &&
-                !isNaN(Number(idStr.toString())))) {
-                id = Number(idStr);
-            } else {
-                ElMessage.error("查找博客失败");
-                return;
-            }
-
-            BlogApis.getBlog(id).then(res => {
-                if (res.data.code === 200) {
-                    ElMessage.success("查找博客成功");
-                    let vo = res.data.body as BlogVO;
-                    blogVO.id = vo.id;
-                    blogVO.publisher = vo.publisher;
-                    blogVO.title = vo.title;
-                    blogVO.content = vo.content;
-                    blogVO.favorNum = vo.favorNum;
-                    blogVO.commentNum = vo.commentNum;
-                    blogVO.rewardNum = vo.rewardNum;
-                    blogVO.favored = vo.favored;
-                    blogVO.selfVisible = vo.selfVisible;
-                    blogVO.hidden = vo.hidden;
-                    blogVO.commentForbidden = vo.commentForbidden;
-                    blogVO.updateTime = vo.updateTime;
-                    blogVO.topic = vo.topic;
-                    blogVO.updatePermission = vo.updatePermission;
-
-                    blogCommentPublishDTO.blogId = vo.id;
-                    blogCommentPublishDTO.receiver = vo.publisher;
-
-                } else {
-                    ElMessage.error(res.data.message);
-                }
-            });
-        }
-
-        getBlogVO();
 
         const openOrCloseCommentArea = () => {
             if (showCommentArea.value) {
                 showCommentArea.value = false;
             } else {
                 if (blogCommentVOList.length === 0) {
-                    getCommentVOList(blogVO.id, -1, 0, blogCommentVOList);
+                    getCommentVOList(props.blogVO.id, -1, 0, blogCommentVOList);
                 }
+
+                blogCommentPublishDTO.receiver = props.blogVO.publisher;
+                blogCommentPublishDTO.blogId = props.blogVO.id;
+                blogCommentPublishDTO.content = "";
+                blogCommentPublishDTO.baseComment = -1;
+                blogCommentPublishDTO.commentOf = -1;
+
                 showCommentArea.value = true;
             }
         };
@@ -208,12 +154,12 @@ export default defineComponent({
             //查找博客的评论
             if (baseComment === -1) {
                 commentPageNum.value++;
-                getCommentVOList(blogVO.id, baseComment, commentPageNum.value, list);
+                getCommentVOList(props.blogVO.id, baseComment, commentPageNum.value, list);
             }
             //查找评论的评论
             else {
                 commentRepliedPageNum.value++;
-                getCommentVOList(blogVO.id, baseComment, commentRepliedPageNum.value, list);
+                getCommentVOList(props.blogVO.id, baseComment, commentRepliedPageNum.value, list);
             }
 
         };
@@ -225,7 +171,7 @@ export default defineComponent({
 
         function setCommentRepliedDialogVisible(commentId: number) {
             commentRepliedDialog.value = true;
-            getCommentVOList(blogVO.id, commentId, 0, blogCommentRepliedVOList);
+            getCommentVOList(props.blogVO.id, commentId, 0, blogCommentRepliedVOList);
         }
 
         function commentRepliedDialogClose() {
@@ -238,7 +184,9 @@ export default defineComponent({
 
         let blogCommentRepliedPublishSuccess = (blogCommentVO: BlogCommentVO) => {
             blogCommentRepliedVOList.push(blogCommentVO);
-            blogVO.commentNum++;
+            Object.assign(props.blogVO, {
+                commentNum: props.blogVO.commentNum + 1,
+            });
         };
 
         let blogCommentPublishSuccess = (commentId: number, publisher: string, createTime: string) => {
@@ -258,16 +206,24 @@ export default defineComponent({
                 deletePermission: true,
             };
             blogCommentVOList.push(blogCommentVO);
-            blogVO.commentNum++;
+            Object.assign(props.blogVO, {
+                commentNum: props.blogVO.commentNum + 1,
+            });
         };
 
         let blogCommentPublishDTO: BlogCommentPublishDTO = reactive({
-            receiver: blogVO.publisher,
-            blogId: blogVO.id,
+            receiver: "",
+            blogId: -1,
             content: "",
             baseComment: -1,
             commentOf: -1,
         });
+
+        onMounted((() => {
+            if (props.autoUnfold) {
+                unfold();
+            }
+        }));
 
         return {
             content,
@@ -302,10 +258,10 @@ export default defineComponent({
 
 #blog {
     position: relative;
-    margin: auto;
+    margin: 0 auto 20px;
     width: 700px;
     border: 1px solid red;
-    /*min-height: 100px;*/
+
 }
 
 #avatar {
@@ -326,40 +282,41 @@ export default defineComponent({
     display: inline-block;
 }
 
+#topic {
+    position: absolute;
+    top: 65px;
+    left: 20px;
+    color: #409eff;
+}
+
 #content {
-    padding: 20px;
+    padding: 20px 20px 0px 20px;
     overflow-wrap: break-word;
     text-align: left;
     overflow: hidden;
-    height: 28px;
+    height: 60px;
 }
 
 #unfoldButton {
     float: right;
-    margin: -5px 30px 0 0;
-}
-
-#topic {
-    float: left;
-    margin: -22px 0 0 20px;
-    color: #409eff;
+    margin: 5px 30px 0 0;
 }
 
 #updateTime {
     float: left;
-    margin: 5px 0 0 20px;
+    margin: 15px 0 0 20px;
     font-size: 10px;
     color: #8590a6;
 }
 
 #favorButton {
     float: left;
-    margin: 30px 0px 10px -170px;
+    margin: 40px 0px 10px -170px;
 }
 
-#openOrCloseCommentAreaButton{
+#openOrCloseCommentAreaButton {
     float: left;
-    margin: 30px 0px 10px -60px;
+    margin: 40px 0px 10px -60px;
 }
 
 </style>

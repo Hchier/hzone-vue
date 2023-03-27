@@ -41,7 +41,6 @@ export default defineComponent({
                 let arr = document.cookie.split('; ');//注意：分号+空格
                 for (let i = 0; i < arr.length; i++) {
                     let index = arr[i].indexOf("=");
-                    console.log(arr[i].substring(0, index));
                     if (arr[i].substring(0, index) === "token") {
                         loggedIn.value = true;
                         return;

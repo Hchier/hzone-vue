@@ -1,6 +1,6 @@
 import axios, {AxiosRequestConfig} from "axios";
 import router from "@/router";
-import {RestResponse} from "@/common/vos/vos";
+import {RestResponse} from "@/common/vos/RestResponse";
 
 export const get = function (url: string) {
     const query: AxiosRequestConfig<object> = {
