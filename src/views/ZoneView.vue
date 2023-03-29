@@ -11,16 +11,17 @@
                 <span id="followNum" class="num">{{ userVO.followNum }}关注</span>
                 <span id="followedNum" class="num">{{ userVO.followedNum }}粉丝</span>
             </div>
-            <el-button id="followed" type="primary">
-                <span v-if="userVO.followed">已关注</span>
-                <span v-else>关注</span>
-            </el-button>
+
+            <div id="followed">
+                <el-button v-show="userVO.followed" type="primary">已关注</el-button>
+                <el-button v-show="!userVO.followed" plain>未关注</el-button>
+            </div>
         </div>
 
         <div id="content">
             <div class="contentButton" @click="getPublishedList">发布列表</div>
             <div class="contentButton" @click="getFavorList">点赞列表</div>
-            <div class="contentButton" @click="getFollowList">关注列表</div>
+            <div class="contentButton" @click="getFollowUserList(); getFollowTopicList()">关注列表</div>
             <div class="contentButton">粉丝列表</div>
             <div class="contentButton">留言墙</div>
 
@@ -32,9 +33,22 @@
                 <Blog :blogVO="item" :autoUnfold="false"></Blog>
             </div>
 
-            <div v-for="item in followUserList" :key="item.id">
-                <Follow :followVO="item"></Follow>
+            <div id="followUserList" v-show="showFollowList">
+                <p style="font-size: 30px;margin: 0 0 10px">关注用户：</p>
+                <div v-for="item in followUserList" :key="item.id">
+                    <FollowUser id="followUserVO" :followUserVO="item"></FollowUser>
+                </div>
+                <el-button @click="loadMoreFollowUserList" type="primary">加载更多</el-button>
             </div>
+
+            <div id="followTopicList" v-show="showFollowList">
+                <p style="font-size: 30px;margin: 0 0 10px">关注话题：</p>
+                <div v-for="item in followTopicList" :key="item.id">
+                    <FollowTopic id="followTopicVO" :followTopicVO="item"></FollowTopic>
+                </div>
+                <el-button @click="loadMoreFollowTopicList" type="primary">加载更多</el-button>
+            </div>
+
         </div>
     </div>
 </template>
@@ -50,16 +64,19 @@ import {BlogVO} from "@/common/vos/BlogVO";
 import BlogApis from "@/common/apis/BlogApis";
 import Blog from "@/components/BlogComponent.vue";
 import {Ref} from "@vue/reactivity";
-import {FollowVO} from "@/common/vos/FollowVO";
 import FollowApis from "@/common/apis/FollowApis";
 import {FollowType} from "@/common/consts/Enums";
-import Follow from "@/components/FollowComponent.vue";
+import FollowUser from "@/components/FollowUserComponent.vue";
+import FollowTopic from "@/components/FollowTopicComponent.vue";
+import {FollowUserVO} from "@/common/vos/FollowUserVO";
+import {FollowTopicVO} from "@/common/vos/FollowTopicVO";
 
 export default defineComponent({
     name: "ZoneView",
     components: {
         Blog,
-        Follow,
+        FollowUser,
+        FollowTopic,
     },
     setup() {
         let userVO: UserVO = reactive({
@@ -108,7 +125,7 @@ export default defineComponent({
         let publishedListPageNum = 0;
         const getPublishedList = () => {
             setVisible(showPublishedList);
-            if (publishedList.length > 0) {
+            if (publishedListPageNum === 0 && publishedList.length > 0) {
                 return;
             }
             BlogApis.getPublishedList(userVO.username, publishedListPageNum).then(res => {
@@ -133,14 +150,19 @@ export default defineComponent({
 
         function getFavorList() {
             setVisible(showFavorList);
-            if (favorList.length > 0) {
+            if (favorListPageNum === 0 && favorList.length > 0) {
                 return;
             }
             BlogApis.getFavorList(userVO.username, favorListPageNum).then(res => {
                 if (res.data.code === 200) {
                     let list = res.data.body as Array<BlogVO>;
-                    deepCopy(list, favorList);
-                    console.log(favorList);
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多内容");
+                    }
+                    list.forEach(value => {
+                        favorList.push(value);
+                    });
+                    ElMessage.success("查找成功");
                 } else {
                     ElMessage.error("查找失败：" + res.data.message);
                 }
@@ -153,29 +175,70 @@ export default defineComponent({
         };
 
 
-        let followUserList: Array<FollowVO> = reactive([]);
+        let followUserList: Array<FollowUserVO> = reactive([]);
         let followUserListPageNum = 0;
 
-        function getFollowList() {
+        function getFollowUserList() {
             setVisible(showFollowList);
-            if (followUserList.length > 0) {
+            //只允许第一次点击‘关注列表’时调用该函数
+            if (followUserListPageNum === 0 && followUserList.length > 0) {
                 return;
             }
-            FollowApis.getFollowList(userVO.username, FollowType.User, followUserListPageNum).then(res => {
+            FollowApis.getUserList(userVO.username, followUserListPageNum).then(res => {
                 if (res.data.code === 200) {
-                    ElMessage.success("查找关注情况成功");
-                    let list = res.data.body as Array<FollowVO>;
-                    deepCopy(list, followUserList);
+                    let list = res.data.body as Array<FollowUserVO>;
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多");
+                        return;
+                    }
+                    list.forEach(value => {
+                        followUserList.push(value);
+                    });
                 } else {
                     ElMessage.error("查找关注情况失败：" + res.data.message);
                 }
             });
         }
 
-        const created = () => {
+        function loadMoreFollowUserList() {
+            followUserListPageNum++;
+            getFollowUserList();
+        }
+
+        let followTopicList: Array<FollowTopicVO> = reactive([]);
+        let followTopicListPageNum = 0;
+
+        function getFollowTopicList() {
+            setVisible(showFollowList);
+            if (followTopicListPageNum === 0 && followTopicList.length > 0) {
+                return;
+            }
+
+            FollowApis.getTopicList(userVO.username, followTopicListPageNum).then(res => {
+                if (res.data.code === 200) {
+                    let list = res.data.body as Array<FollowTopicVO>;
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多");
+                        return;
+                    }
+                    list.forEach(value => {
+                        followTopicList.push(value);
+                    });
+                } else {
+                    ElMessage.error("查找关注情况失败：" + res.data.message);
+                }
+            });
+        }
+
+        function loadMoreFollowTopicList() {
+            followTopicListPageNum++;
+            getFollowTopicList();
+        }
+
+        function created() {
             getUserVO();
             getPublishedList();
-        };
+        }
 
         created();
 
@@ -193,7 +256,12 @@ export default defineComponent({
             getFavorList,
             loadMoreFavorList,
             followUserList,
-            getFollowList,
+            getFollowUserList,
+            loadMoreFollowUserList,
+            followTopicList,
+            getFollowTopicList,
+            loadMoreFollowTopicList,
+
         };
     },
 });
@@ -261,6 +329,10 @@ export default defineComponent({
     top: 30px;
 }
 
+#content {
+    position: relative;
+}
+
 .contentButton {
     border: 1px solid red;
     box-sizing: border-box;
@@ -275,5 +347,20 @@ export default defineComponent({
     background-color: #e6f0fd;
     cursor: pointer;
 }
+
+#followUserList {
+    float: left;
+    border: 1px solid blue;
+    box-sizing: border-box;
+    width: 300px;
+}
+
+#followTopicList {
+    float: right;
+    border: 1px solid blue;
+    box-sizing: border-box;
+    width: 300px;
+}
+
 
 </style>
