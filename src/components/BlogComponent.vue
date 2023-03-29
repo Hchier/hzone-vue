@@ -19,11 +19,11 @@
         <p id="updateTime">发布于 {{ blogVO.updateTime }}</p>
 
         <div id="favorButton">
-            <el-button type="primary" v-show="blogVO.favored">
+            <el-button type="primary" v-show="blogVO.favored" @click="blogUnFavor">
                 已点赞
                 ({{ blogVO.favorNum }})
             </el-button>
-            <el-button type="primary" v-show="!blogVO.favored" plain>
+            <el-button type="primary" v-show="!blogVO.favored" plain @click="blogFavor">
                 点赞
                 ({{ blogVO.favorNum }})
             </el-button>
@@ -219,6 +219,34 @@ export default defineComponent({
             commentOf: -1,
         });
 
+        function blogFavor() {
+            BlogApis.blogFavor(props.blogVO.id, props.blogVO.publisher).then(res => {
+                if (res.data.code === 200) {
+                    ElMessage.success("点赞成功");
+                    Object.assign(props.blogVO, {
+                        favored: true,
+                        favorNum: props.blogVO.favorNum + 1,
+                    });
+                } else {
+                    ElMessage.error("点赞失败：" + res.data.message);
+                }
+            });
+        }
+
+        function blogUnFavor() {
+            BlogApis.blogUnFavor(props.blogVO.id, props.blogVO.publisher).then(res => {
+                if (res.data.code === 200) {
+                    ElMessage.success("取消点赞成功");
+                    Object.assign(props.blogVO, {
+                        favored: false,
+                        favorNum: props.blogVO.favorNum - 1,
+                    });
+                } else {
+                    ElMessage.error("点赞失败：" + res.data.message);
+                }
+            });
+        }
+
         onMounted((() => {
             if (props.autoUnfold) {
                 unfold();
@@ -243,6 +271,8 @@ export default defineComponent({
             blogCommentRepliedPublishSuccess,
             blogCommentPublishDTO,
             blogCommentPublishSuccess,
+            blogFavor,
+            blogUnFavor,
         };
     },
 });

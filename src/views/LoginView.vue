@@ -27,6 +27,7 @@ import {defineComponent, reactive} from "vue";
 import {UserLoginDTO} from "@/common/dtos/UserDTOs";
 import UserApis from "@/common/apis/UserApis";
 import {ElMessage} from "element-plus";
+import router from "@/router";
 
 export default defineComponent({
     name: "LoginView",
@@ -48,6 +49,7 @@ export default defineComponent({
                 if (res.data.code === 200) {
                     ElMessage.success("登录成功");
                     context.emit("loginSuccessEmit", userLoginDto.username);
+                    router.push({path: "/"});
                 } else {
                     ElMessage.error("登录失败：" + res.data.body);
                 }

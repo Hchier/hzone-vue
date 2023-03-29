@@ -1,8 +1,9 @@
 export  type UserVO = {
     username: string,
     signature: string,
+    blogNum: number,
     favorNum: number,
-    faveredNum: number,
+    favoredNum: number,
     followNum: number,
     followedNum: number,
     followed: boolean
