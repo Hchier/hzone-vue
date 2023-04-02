@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-input v-model="content"></el-input>
+        <el-input v-model="content" placeholder="请输入评论..."></el-input>
         <el-button id="publishButton" type="primary" @click="publishComment">提交</el-button>
     </div>
 </template>

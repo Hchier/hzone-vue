@@ -162,7 +162,8 @@ export default defineComponent({
 
 #BlogComment {
     position: relative;
-    border: red 1px solid;
+    border: 1px solid #f0f2f7;
+    background-color: white;
     overflow: hidden;
     width: 700px;
 
@@ -172,15 +173,12 @@ export default defineComponent({
     position: absolute;
     top: 10px;
     left: 10px;
-    border: red 1px solid;
 }
 
 #publisher {
     position: absolute;
     top: 10px;
     left: 80px;
-    border: red 1px solid;
-
 }
 
 #opButton {
@@ -198,7 +196,6 @@ export default defineComponent({
     float: left;
     margin-top: 50px;
     margin-left: 80px;
-    border: red 1px solid;
     width: 600px;
     overflow-wrap: break-word;
     text-align: left;

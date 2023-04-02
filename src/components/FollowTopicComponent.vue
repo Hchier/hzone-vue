@@ -72,14 +72,13 @@ export default defineComponent({
 }
 
 #follow {
-    border: 1px solid red;
-    box-sizing: border-box;
     width: 300px;
     height: 50px;
 }
 
 #followee {
     float: left;
+    margin-left: 15px;
     line-height: 50px;
     font-size: 23px;
 }

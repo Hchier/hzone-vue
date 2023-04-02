@@ -1,6 +1,6 @@
 <template>
 
-    <el-container>
+    <el-container style="background-color: #f6f6f6; min-height: 1000px">
         <el-header id="header">
             <router-link to="/">首页</router-link>
             |

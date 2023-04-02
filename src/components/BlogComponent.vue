@@ -31,38 +31,39 @@
         <el-button id="openOrCloseCommentAreaButton" type="primary" @click="openOrCloseCommentArea">
             评论({{ blogVO.commentNum }})
         </el-button>
-    </div>
 
 
-    <div v-for="(item) in blogCommentVOList" v-bind:key="item.id" v-show="showCommentArea">
-        <BlogComment
-            style="margin: auto"
-            v-bind:blogCommentVO="item"
-            v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
-            v-bind:moreRepliesButtonVisible="true"
-            @setCommentRepliedDialogVisibleEmit="setCommentRepliedDialogVisible(item.id)"
-            @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></BlogComment>
-    </div>
-    <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)" v-show="showCommentArea">更多评论
-    </el-button>
-
-    <el-dialog v-model="commentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose"
-               style="width: 750px">
-        <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
-             style="margin: auto">
-            <BlogComment v-bind:blogCommentVO="item"
-                         v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
-                         v-bind:moreRepliesButtonVisible="false"
-                         @commentPublishSuccessEmit="blogCommentRepliedPublishSuccess">
-            </BlogComment>
+        <div v-for="(item) in blogCommentVOList" v-bind:key="item.id" v-show="showCommentArea">
+            <BlogComment
+                style="margin: auto"
+                v-bind:blogCommentVO="item"
+                v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
+                v-bind:moreRepliesButtonVisible="true"
+                @setCommentRepliedDialogVisibleEmit="setCommentRepliedDialogVisible(item.id)"
+                @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></BlogComment>
         </div>
-        <el-button type="primary"
-                   @click="loadMoreComments(blogCommentRepliedVOList[0].id,blogCommentRepliedVOList)">更多评论
+        <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)" v-show="showCommentArea">更多评论
         </el-button>
-    </el-dialog>
 
-    <Reply id="replyComponent" :blogCommentPublishDTO="blogCommentPublishDTO" v-if="showCommentArea"
-           @blogCommentPublishSuccessEmit="blogCommentPublishSuccess"></Reply>
+        <el-dialog v-model="showCommentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose"
+                   style="width: 750px">
+            <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
+                 style="margin: auto">
+                <BlogComment v-bind:blogCommentVO="item"
+                             v-bind:hiddenPermission="item.currentUser === blogVO.publisher"
+                             v-bind:moreRepliesButtonVisible="false"
+                             @commentPublishSuccessEmit="blogCommentRepliedPublishSuccess">
+                </BlogComment>
+            </div>
+            <el-button type="primary"
+                       @click="loadMoreComments(blogCommentRepliedVOList[0].id,blogCommentRepliedVOList)">更多评论
+            </el-button>
+        </el-dialog>
+
+        <Reply id="replyComponent" :blogCommentPublishDTO="blogCommentPublishDTO" v-if="showCommentArea"
+               @blogCommentPublishSuccessEmit="blogCommentPublishSuccess"></Reply>
+    </div>
+
 
 </template>
 
@@ -166,16 +167,16 @@ export default defineComponent({
 
         //评论的评论
         let commentRepliedPageNum: Ref<UnwrapRef<number>> = ref(0);
-        let commentRepliedDialog = ref(false);
+        let showCommentRepliedDialog = ref(false);
         let blogCommentRepliedVOList: Array<BlogCommentVO> = reactive([]);
 
         function setCommentRepliedDialogVisible(commentId: number) {
-            commentRepliedDialog.value = true;
+            showCommentRepliedDialog.value = true;
             getCommentVOList(props.blogVO.id, commentId, 0, blogCommentRepliedVOList);
         }
 
         function commentRepliedDialogClose() {
-            commentRepliedDialog.value = false;
+            showCommentRepliedDialog.value = false;
             for (let i = 0; i < blogCommentRepliedVOList.length; i++) {
                 blogCommentRepliedVOList.pop();
             }
@@ -262,7 +263,7 @@ export default defineComponent({
             showCommentArea,
             openOrCloseCommentArea,
             loadMoreComments,
-            commentRepliedDialog,
+            showCommentRepliedDialog,
             setCommentRepliedDialogVisible,
             blogCommentRepliedVOList,
             CommentRepliedDialogClose: commentRepliedDialogClose,
@@ -287,10 +288,11 @@ export default defineComponent({
 }
 
 #blog {
+    background-color: white;
     position: relative;
     margin: 0 auto 20px;
     width: 700px;
-    border: 1px solid red;
+    border: 1px solid #f0f2f7;
 
 }
 

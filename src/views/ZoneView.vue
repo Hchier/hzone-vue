@@ -21,8 +21,9 @@
         <div id="content">
             <div class="contentButton" @click="getPublishedList">发布列表</div>
             <div class="contentButton" @click="getFavorList">点赞列表</div>
-            <div class="contentButton" @click="getFollowUserList(); getFollowTopicList()">关注列表</div>
-            <div class="contentButton">粉丝列表</div>
+            <div class="contentButton" @click="getFollowUserList">关注用户</div>
+            <div class="contentButton" @click="getFollowTopicList">关注列表</div>
+            <div class="contentButton" @click="getFansList">粉丝列表</div>
             <div class="contentButton">留言墙</div>
 
             <div v-for="item in publishedList" v-bind:key="item.id" v-show="showPublishedList">
@@ -33,21 +34,32 @@
                 <Blog :blogVO="item" :autoUnfold="false"></Blog>
             </div>
 
-            <div id="followUserList" v-show="showFollowList">
-                <p style="font-size: 30px;margin: 0 0 10px">关注用户：</p>
-                <div v-for="item in followUserList" :key="item.id">
-                    <FollowUser id="followUserVO" :followUserVO="item"></FollowUser>
+            <el-dialog v-model="showFollowUserList" title="关注用户" style="width: 390px;">
+                <div id="followUserList">
+                    <div v-for="item in followUserList" :key="item.id">
+                        <FollowUser id="followUserVO" :followUserVO="item" :showFollower="false"></FollowUser>
+                    </div>
+                    <el-button @click="loadMoreFollowUserList" type="primary">加载更多</el-button>
                 </div>
-                <el-button @click="loadMoreFollowUserList" type="primary">加载更多</el-button>
-            </div>
+            </el-dialog>
 
-            <div id="followTopicList" v-show="showFollowList">
-                <p style="font-size: 30px;margin: 0 0 10px">关注话题：</p>
-                <div v-for="item in followTopicList" :key="item.id">
-                    <FollowTopic id="followTopicVO" :followTopicVO="item"></FollowTopic>
+            <el-dialog v-model="showFollowTopicList" title="关注话题" style="width: 390px">
+                <div id="followTopicList">
+                    <div v-for="item in followTopicList" :key="item.id">
+                        <FollowTopic id="followTopicVO" :followTopicVO="item"></FollowTopic>
+                    </div>
+                    <el-button @click="loadMoreFollowTopicList" type="primary">加载更多</el-button>
                 </div>
-                <el-button @click="loadMoreFollowTopicList" type="primary">加载更多</el-button>
-            </div>
+            </el-dialog>
+
+            <el-dialog v-model="showFansList" title="粉丝列表" style="width: 390px">
+                <div id="fansList">
+                    <div v-for="item in fansList" :key="item.id">
+                        <FollowUser id="followUserVO"  :followUserVO="item" :showFollower="true"></FollowUser>
+                    </div>
+                    <el-button @click="loadMoreFansList" type="primary">加载更多</el-button>
+                </div>
+            </el-dialog>
 
         </div>
     </div>
@@ -108,15 +120,17 @@ export default defineComponent({
 
         let showPublishedList = ref(true),
             showFavorList = ref(false),
-            showFollowList = ref(false),
-            showFollowedList = ref(false),
+            showFollowUserList = ref(false),
+            showFollowTopicList = ref(false),
+            showFansList = ref(false),
             showMsgWall = ref(false);
 
         function setVisible(item: Ref) {
             showPublishedList.value = false;
             showFavorList.value = false;
-            showFollowList.value = false;
-            showFollowedList.value = false;
+            showFollowUserList.value = false;
+            showFollowTopicList.value = false;
+            showFansList.value = false;
             showMsgWall.value = false;
             item.value = true;
         }
@@ -131,9 +145,7 @@ export default defineComponent({
             BlogApis.getPublishedList(userVO.username, publishedListPageNum).then(res => {
                 if (res.data.code === 200) {
                     let list = res.data.body as Array<BlogVO>;
-                    list.forEach(value => {
-                        publishedList.push(value);
-                    });
+                    publishedList.push(...list);
                 } else {
                     ElMessage.error("查找失败：" + res.data.message);
                 }
@@ -159,9 +171,7 @@ export default defineComponent({
                     if (list.length === 0) {
                         ElMessage.error("暂无更多内容");
                     }
-                    list.forEach(value => {
-                        favorList.push(value);
-                    });
+                    favorList.push(...list);
                     ElMessage.success("查找成功");
                 } else {
                     ElMessage.error("查找失败：" + res.data.message);
@@ -179,7 +189,7 @@ export default defineComponent({
         let followUserListPageNum = 0;
 
         function getFollowUserList() {
-            setVisible(showFollowList);
+            setVisible(showFollowUserList);
             //只允许第一次点击‘关注列表’时调用该函数
             if (followUserListPageNum === 0 && followUserList.length > 0) {
                 return;
@@ -191,9 +201,7 @@ export default defineComponent({
                         ElMessage.error("暂无更多");
                         return;
                     }
-                    list.forEach(value => {
-                        followUserList.push(value);
-                    });
+                    followUserList.push(...list);
                 } else {
                     ElMessage.error("查找关注情况失败：" + res.data.message);
                 }
@@ -209,11 +217,10 @@ export default defineComponent({
         let followTopicListPageNum = 0;
 
         function getFollowTopicList() {
-            setVisible(showFollowList);
+            setVisible(showFollowTopicList);
             if (followTopicListPageNum === 0 && followTopicList.length > 0) {
                 return;
             }
-
             FollowApis.getTopicList(userVO.username, followTopicListPageNum).then(res => {
                 if (res.data.code === 200) {
                     let list = res.data.body as Array<FollowTopicVO>;
@@ -235,6 +242,34 @@ export default defineComponent({
             getFollowTopicList();
         }
 
+        let fansList: Array<FollowUserVO> = reactive([]);
+        let fansListPageNum = 0;
+
+        function getFansList() {
+            setVisible(showFansList);
+            if (fansListPageNum === 0 && fansList.length > 0) {
+                return;
+            }
+            FollowApis.getFollowerList(userVO.username, FollowType.User, fansListPageNum).then(res => {
+                if (res.data.code === 200) {
+                    let list = res.data.body as Array<FollowUserVO>;
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多");
+                        return;
+                    }
+                    ElMessage.success("查找粉丝列表成功");
+                    fansList.push(...list);
+                } else {
+                    ElMessage.error("查找粉丝列表失败：" + res.data.message);
+                }
+            });
+        }
+
+        function loadMoreFansList() {
+            fansListPageNum++;
+            getFansList();
+        }
+
         function created() {
             getUserVO();
             getPublishedList();
@@ -246,8 +281,9 @@ export default defineComponent({
             userVO,
             showPublishedList,
             showFavorList,
-            showFollowList,
-            showFollowedList,
+            showFollowUserList,
+            showFollowTopicList,
+            showFansList,
             showMsgWall,
             publishedList,
             getPublishedList,
@@ -261,7 +297,9 @@ export default defineComponent({
             followTopicList,
             getFollowTopicList,
             loadMoreFollowTopicList,
-
+            fansList,
+            getFansList,
+            loadMoreFansList,
         };
     },
 });
@@ -275,20 +313,20 @@ export default defineComponent({
     clear: both;
 }
 
+
 #zone {
     position: relative;
     margin: 0 auto;
-    border: 1px solid red;
     box-sizing: border-box;
     width: 700px;
 }
 
 #userInfo {
-    border: 1px solid red;
     box-sizing: border-box;
     width: 700px;
     height: 130px;
     margin: 0 0 20px 0;
+    background-color: white;
 }
 
 
@@ -301,7 +339,7 @@ export default defineComponent({
 #username {
     position: absolute;
     left: 130px;
-    top: 0px;
+    top: 0;
     font-size: 25px;
 }
 
@@ -334,13 +372,13 @@ export default defineComponent({
 }
 
 .contentButton {
-    border: 1px solid red;
     box-sizing: border-box;
     height: 50px;
-    width: 139px;
+    width: 116px;
     line-height: 50px;
     display: inline-block;
     text-align: center;
+    background-color: white;
 }
 
 .contentButton:hover {
@@ -348,19 +386,30 @@ export default defineComponent({
     cursor: pointer;
 }
 
+
 #followUserList {
-    float: left;
-    border: 1px solid blue;
     box-sizing: border-box;
-    width: 300px;
+    width: 350px;
+    background-color: white;
+}
+
+#followUserVO {
+    border: 1px solid #f0f2f7;
 }
 
 #followTopicList {
-    float: right;
-    border: 1px solid blue;
     box-sizing: border-box;
-    width: 300px;
+    width: 350px;
+    background-color: white;
 }
 
+#followTopicVO {
+    border: 1px solid #f0f2f7;
+}
+
+#fansList {
+    width: 300px;
+    margin: 0 auto;
+}
 
 </style>

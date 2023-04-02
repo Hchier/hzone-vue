@@ -2,7 +2,8 @@
     <div id="follow" class="clear">
         <el-avatar id="avatar" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" :size="45"/>
 
-        <a id="followee">{{ followUserVO.followee }}</a>
+        <a id="username" v-show="!showFollower">{{ followUserVO.followee }}</a>
+        <a id="username" v-show="showFollower">{{ followUserVO.follower }}</a>
 
         <div id="followButton">
             <el-button v-show="followUserVO.followed" type="primary" @click="followCancel">已关注</el-button>
@@ -20,12 +21,12 @@ import {ElMessage} from "element-plus";
 
 export default defineComponent({
     name: "FollowComponent",
-    props: ["followUserVO"],
+    props: ["followUserVO", "showFollower"],
     setup(props) {
         function follow() {
             let followDTO: FollowDTO = {
                 type: FollowType.User,
-                followee: props.followUserVO.followee,
+                followee: props.showFollower ? props.followUserVO.follower : props.followUserVO.followee,
             };
             FollowApis.follow(followDTO).then(res => {
                 if (res.data.code === 200) {
@@ -42,7 +43,8 @@ export default defineComponent({
         const followCancel = () => {
             let followCancelDTO: FollowCancelDTO = {
                 type: FollowType.User,
-                followee: props.followUserVO.followee,
+                // followee: props.followUserVO.followee,
+                followee: props.showFollower ? props.followUserVO.follower : props.followUserVO.followee,
             };
             FollowApis.followCancel(followCancelDTO).then(res => {
                 if (res.data.code === 200) {
@@ -74,8 +76,8 @@ export default defineComponent({
 }
 
 #follow {
-    border: 1px solid red;
     box-sizing: border-box;
+    border: 1px solid #f0f2f7;
     width: 300px;
     height: 50px;
 }
@@ -85,7 +87,7 @@ export default defineComponent({
     margin: 0 20px 0 0;
 }
 
-#followee {
+#username {
     margin: 0;
     float: left;
     font-size: 23px;
