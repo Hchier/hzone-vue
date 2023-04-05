@@ -47,9 +47,7 @@ export default defineComponent({
         function login() {
             UserApis.login(userLoginDto).then(res => {
                 if (res.data.code === 200) {
-                    ElMessage.success("登录成功");
                     context.emit("loginSuccessEmit", userLoginDto.username);
-                    router.push({path: "/"});
                 } else {
                     ElMessage.error("登录失败：" + res.data.body);
                 }

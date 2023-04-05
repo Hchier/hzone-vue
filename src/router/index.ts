@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import {createRouter, createWebHistory, RouteRecordRaw} from "vue-router";
 import HomeView from "../views/HomeView.vue";
 
 const routes: Array<RouteRecordRaw> = [
@@ -30,6 +30,12 @@ const routes: Array<RouteRecordRaw> = [
         name: "notice",
         component: () =>
             import(/* webpackChunkName: "about" */ "../views/NoticeView.vue"),
+    },
+    {
+        path: "/h",
+        name: "h",
+        component: () =>
+            import(/* webpackChunkName: "about" */ "../views/ChatFrameView.vue"),
     },
 
 ];

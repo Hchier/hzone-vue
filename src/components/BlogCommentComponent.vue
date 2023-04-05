@@ -205,7 +205,7 @@ export default defineComponent({
     float: left;
     margin-top: 10px;
     margin-left: 80px;
-    font-size: 10px;
+    font-size: 8px;
     color: #8590a6;
 }
 
