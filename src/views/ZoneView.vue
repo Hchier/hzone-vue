@@ -19,12 +19,12 @@
         </div>
 
         <div id="content">
-            <div class="contentButton" @click="getPublishedList">发布列表</div>
-            <div class="contentButton" @click="getFavorList">点赞列表</div>
-            <div class="contentButton" @click="getFollowUserList">关注用户</div>
-            <div class="contentButton" @click="getFollowTopicList">关注列表</div>
-            <div class="contentButton" @click="getFansList">粉丝列表</div>
-            <div class="contentButton">留言墙</div>
+            <div class="contentButton" tabindex="1" @click="getPublishedList">发布列表</div>
+            <div class="contentButton" tabindex="1" @click="getFavorList">点赞列表</div>
+            <div class="contentButton" tabindex="1" @click="getFollowUserList">关注用户</div>
+            <div class="contentButton" tabindex="1" @click="getFollowTopicList">关注列表</div>
+            <div class="contentButton" tabindex="1" @click="getFansList">粉丝列表</div>
+            <div class="contentButton" tabindex="1">留言墙</div>
 
             <div v-for="item in publishedList" v-bind:key="item.id" v-show="showPublishedList">
                 <Blog :blogVO="item" :autoUnfold="false"></Blog>
@@ -55,7 +55,7 @@
             <el-dialog v-model="showFansList" title="粉丝列表" style="width: 390px">
                 <div id="fansList">
                     <div v-for="item in fansList" :key="item.id">
-                        <FollowUser id="followUserVO"  :followUserVO="item" :showFollower="true"></FollowUser>
+                        <FollowUser id="followUserVO" :followUserVO="item" :showFollower="true"></FollowUser>
                     </div>
                     <el-button @click="loadMoreFansList" type="primary">加载更多</el-button>
                 </div>
@@ -379,6 +379,10 @@ export default defineComponent({
     display: inline-block;
     text-align: center;
     background-color: white;
+}
+
+.contentButton:focus {
+    color: #42b983;
 }
 
 .contentButton:hover {
