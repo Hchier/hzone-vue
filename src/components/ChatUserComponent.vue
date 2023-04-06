@@ -2,7 +2,9 @@
     <div id="chatUser" class="clear">
         <el-avatar id="avatar" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" :size="45"/>
 
-        <a id="username">{{ username}}</a>
+        <a id="username">{{ chatUserVO.sender }}</a>
+        <el-badge id="unReadNum" :value="chatUserVO.unReadNum" :max="99">
+        </el-badge>
 
     </div>
 </template>
@@ -12,7 +14,7 @@ import {defineComponent} from "vue";
 
 export default defineComponent({
     name: "ChatUserComponent",
-    props: ["username"],
+    props: ["chatUserVO"],
     setup() {
         return {};
     },
@@ -44,6 +46,10 @@ export default defineComponent({
     float: left;
     font-size: 18px;
     line-height: 50px;
+}
+
+#unReadNum {
+    float: left;
 }
 
 </style>

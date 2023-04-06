@@ -1,8 +1,8 @@
-export type PrivateMsgVO = {
+export type PrivateChatMsgVO = {
     id: number,
     from: string,
     to: string,
     content: string,
     createTime: string,
-    float: string,
+    fromCurrentUser: boolean,
 }

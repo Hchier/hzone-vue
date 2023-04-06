@@ -16,7 +16,12 @@ module.exports = {
         "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
         "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
         "no-empty": "off",
-        indent: ["error", 4],
+        "no-case-declarations": "off",
+        indent: [
+            "error",
+            4,
+            {"SwitchCase": 1}
+        ],
         "prettier/prettier": "off",
     },
 };

@@ -45,7 +45,7 @@
         <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)" v-show="showCommentArea">更多评论
         </el-button>
 
-        <el-dialog v-model="showCommentRepliedDialog" title="评论回复" @close="CommentRepliedDialogClose"
+        <el-dialog v-model="showCommentRepliedDialog" title="评论回复" @close="commentRepliedDialogClose"
                    style="width: 750px">
             <div v-for="(item) in blogCommentRepliedVOList" v-bind:key="item.id" v-show="showCommentArea"
                  style="margin: auto">
@@ -177,7 +177,8 @@ export default defineComponent({
 
         function commentRepliedDialogClose() {
             showCommentRepliedDialog.value = false;
-            for (let i = 0; i < blogCommentRepliedVOList.length; i++) {
+            let len = blogCommentRepliedVOList.length;
+            for (let i = 0; i < len; i++) {
                 blogCommentRepliedVOList.pop();
             }
             commentRepliedPageNum.value = 0;
@@ -266,7 +267,7 @@ export default defineComponent({
             showCommentRepliedDialog,
             setCommentRepliedDialogVisible,
             blogCommentRepliedVOList,
-            CommentRepliedDialogClose: commentRepliedDialogClose,
+            commentRepliedDialogClose,
             commentPageNum,
             commentRepliedPageNum,
             blogCommentRepliedPublishSuccess,

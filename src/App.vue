@@ -14,11 +14,20 @@
                 <router-link to="/notice">通知</router-link>
             </el-badge>
             |
+            <router-link to="/privateChat">私信</router-link>
+            |
             <router-link to="/">登出</router-link>
         </el-header>
 
         <el-main>
-            <router-view @loginSuccessEmit="loginSuccess" :msgMap="msgMap"/>
+            <router-view
+                @loginSuccessEmit="loginSuccess"
+                :chatUserVOList="chatUserVOList"
+                :msg2dList="msg2dList"
+                @recallEmit="recall"
+                @updateMsg2dListEmit="updateMsg2dList"
+                @addToMsg2dListEmit="addToMsg2dList"
+            />
         </el-main>
 
         <el-footer id="footer">Footer</el-footer>
@@ -30,15 +39,21 @@
 
 import {defineComponent, reactive, ref} from "vue";
 import router from "@/router";
-import {PrivateMsgVO} from "@/common/vos/PrivateMsgVO";
+import {PrivateChatMsgVO} from "@/common/vos/PrivateChatMsgVO";
 import {ElMessage} from "element-plus";
+import {ChatUserVO} from "@/common/vos/ChatUserVO";
+import {WsMsgDTO} from "@/common/dtos/WsMsgDTO";
+import {WsMsgType} from "@/common/consts/Enums";
+import TalkApis from "@/common/apis/TalkApis";
 
 export default defineComponent({
-    setup(props, context) {
+    setup: function (props, context) {
         let loggedIn = ref(false);
         let ws: WebSocket;
+        let currentUser = ref("");
 
         function loginSuccess(username: string) {
+            currentUser.value = username;
             let token: string = getCookie("token");
             if (token === "") {
                 return;
@@ -47,13 +62,44 @@ export default defineComponent({
 
             ws.onopen = function () {
                 loggedIn.value = true;
+
+                console.log(currentUser.value);
                 ElMessage.success("登录成功");
                 router.push({path: "/"});
+
             };
 
             ws.onmessage = function (this: WebSocket, ev: MessageEvent<string>) {
-                let vo: PrivateMsgVO = JSON.parse(ev.data);
-                //todo
+                console.log(ev.data);
+                switch (Number(ev.data[8])) {
+                    case WsMsgType.NoticeNumIncr:
+                        //todo
+                        break;
+                    case WsMsgType.PrivateChatMsg:
+                        let wsMsg = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsgVO>;
+                        let added = false;
+                        chatUserVOList.forEach((value, index) => {
+                            if (value.sender === wsMsg.body.from) {
+                                msg2dList[index].push(wsMsg.body);
+                                added = true;
+                            }
+                        });
+                        if (!added) {
+                            chatUserVOList.push({
+                                sender: wsMsg.body.from,
+                                unReadNum: 1,
+                            });
+                            msg2dList[0].push(wsMsg.body);
+                        }
+                        break;
+                    case WsMsgType.MsgRecall:
+                        //todo
+                        break;
+                    default:
+                        console.log("未知的WsMsgType：" + Number(ev.data[8]));
+                        break;
+                }
+
             };
 
             ws.onerror = function () {
@@ -82,45 +128,50 @@ export default defineComponent({
             loggedIn.value = (getCookie("token") !== "");
         }
 
-        let msgMap = reactive(new Map<string, Array<PrivateMsgVO>>());
-        msgMap.set(
-            "jack",
-            [{
-                id: 1,
-                from: "jack",
-                to: "hchier",
-                content: "111",
-                createTime: "202020",
-                float: "left",
-            }, {
-                id: 2,
-                from: "jack",
-                to: "hchier",
-                content: "222",
-                createTime: "202020",
-                float: "right",
-            }]);
+        let chatUserVOList: ChatUserVO[] = reactive([]);
+        let msg2dList: PrivateChatMsgVO[][] = reactive([]);
 
-        msgMap.set(
-            "hhh",
-            [{
-                id: 3,
-                from: "jack",
-                to: "hchier",
-                content: "333",
-                createTime: "202020",
-                float: "left",
-            }, {
-                id: 4,
-                from: "jack",
-                to: "hchier",
-                content: "444",
-                createTime: "202020",
-                float: "left",
-            }]);
+        function recall(receiver: string, id: number) {
+            let index = -1;
+            for (let i = 0; i < chatUserVOList.length; i++) {
+                if (receiver === chatUserVOList[i].sender) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index === -1) {
+                return;
+            }
+            msg2dList[index].forEach((value, i) => {
+                if (value.id === id) {
+                    msg2dList[index].splice(i, 1);
+                }
+            });
+        }
+
+        function updateMsg2dList(index: number, list: Array<PrivateChatMsgVO>) {
+            msg2dList[index] = list;
+        }
+
+        function addToMsg2dList(index: number, vo: PrivateChatMsgVO) {
+            msg2dList[index].push(vo);
+        }
+
+        function loadChatUserVOList() {
+            TalkApis.getChatUserVOList().then(res => {
+                if (res.data.code === 200) {
+                    let list = res.data.body as Array<ChatUserVO>;
+                    chatUserVOList.push(...list)
+                } else {
+                    ElMessage.error("加载ChatUserVOList失败");
+                }
+            });
+
+        }
 
         function created() {
             checkLoginStatus();
+            loadChatUserVOList();
         }
 
         created();
@@ -128,7 +179,13 @@ export default defineComponent({
         return {
             loginSuccess,
             loggedIn,
-            msgMap,
+            // msgMap,
+            chatUserVOList,
+            msg2dList,
+            recall,
+            currentUser,
+            updateMsg2dList,
+            addToMsg2dList,
         };
     },
 });
