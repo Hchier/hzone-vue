@@ -45,6 +45,7 @@ import {ChatUserVO} from "@/common/vos/ChatUserVO";
 import {WsMsgDTO} from "@/common/dtos/WsMsgDTO";
 import {WsMsgType} from "@/common/consts/Enums";
 import TalkApis from "@/common/apis/TalkApis";
+import UserApis from "@/common/apis/UserApis";
 
 export default defineComponent({
     setup: function (props, context) {
@@ -58,8 +59,12 @@ export default defineComponent({
             if (token === "") {
                 return;
             }
-            ws = new WebSocket("ws://localhost:9527/ws/" + getCookie("token"));
 
+            createWs();
+        }
+
+        function createWs() {
+            ws = new WebSocket("ws://localhost:9527/ws/" + getCookie("token"));
             ws.onopen = function () {
                 loggedIn.value = true;
 
@@ -68,7 +73,6 @@ export default defineComponent({
                 router.push({path: "/"});
 
             };
-
             ws.onmessage = function (this: WebSocket, ev: MessageEvent<string>) {
                 console.log(ev.data);
                 switch (Number(ev.data[8])) {
@@ -101,11 +105,9 @@ export default defineComponent({
                 }
 
             };
-
             ws.onerror = function () {
                 loggedIn.value = false;
             };
-
             ws.onclose = function () {
                 loggedIn.value = false;
             };
@@ -125,7 +127,18 @@ export default defineComponent({
         }
 
         function checkLoginStatus() {
-            loggedIn.value = (getCookie("token") !== "");
+            loggedIn.value = false;
+            let token = getCookie("token");
+            if (token !== "") {
+                UserApis.loginByToken().then(res => {
+                    if (res.data.code === 200) {
+                        loggedIn.value = true;
+                        createWs();
+                    } else {
+                        router.push({path: "/login"});
+                    }
+                });
+            }
         }
 
         let chatUserVOList: ChatUserVO[] = reactive([]);
@@ -161,7 +174,7 @@ export default defineComponent({
             TalkApis.getChatUserVOList().then(res => {
                 if (res.data.code === 200) {
                     let list = res.data.body as Array<ChatUserVO>;
-                    chatUserVOList.push(...list)
+                    chatUserVOList.push(...list);
                 } else {
                     ElMessage.error("加载ChatUserVOList失败");
                 }
