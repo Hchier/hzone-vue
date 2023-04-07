@@ -137,7 +137,18 @@ export default defineComponent({
 
         let publishedList: Array<BlogVO> = reactive([]);
         let publishedListPageNum = 0;
-        const getPublishedList = () => {
+
+
+        function sleep(d: number) {
+            return new Promise((resolve) => setTimeout(resolve, d));
+        }
+
+
+        async function getPublishedList() {
+            while (userVO.username === "") {
+                await sleep(100);
+            }
+            console.log(111);
             setVisible(showPublishedList);
             if (publishedListPageNum === 0 && publishedList.length > 0) {
                 return;
@@ -150,7 +161,7 @@ export default defineComponent({
                     ElMessage.error("查找失败：" + res.data.message);
                 }
             });
-        };
+        }
 
         function loadMorePublishedList() {
             publishedListPageNum++;
@@ -319,6 +330,7 @@ export default defineComponent({
     margin: 0 auto;
     box-sizing: border-box;
     width: 700px;
+    background-color: white;
 }
 
 #userInfo {
@@ -383,6 +395,7 @@ export default defineComponent({
 
 .contentButton:focus {
     color: #42b983;
+    background-color: #e6f0fd;
 }
 
 .contentButton:hover {

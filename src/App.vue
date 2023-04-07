@@ -16,7 +16,7 @@
             |
             <router-link to="/privateChat">私信</router-link>
             |
-            <router-link to="/">登出</router-link>
+            <router-link to="/login" @click="logout">登出</router-link>
         </el-header>
 
         <el-main>
@@ -51,15 +51,14 @@ export default defineComponent({
     setup: function (props, context) {
         let loggedIn = ref(false);
         let ws: WebSocket;
-        let currentUser = ref("");
 
         function loginSuccess(username: string) {
-            currentUser.value = username;
             let token: string = getCookie("token");
             if (token === "") {
                 return;
             }
-
+            ElMessage.success("登录成功");
+            router.push({path: "/"});
             createWs();
         }
 
@@ -67,14 +66,8 @@ export default defineComponent({
             ws = new WebSocket("ws://localhost:9527/ws/" + getCookie("token"));
             ws.onopen = function () {
                 loggedIn.value = true;
-
-                console.log(currentUser.value);
-                ElMessage.success("登录成功");
-                router.push({path: "/"});
-
             };
             ws.onmessage = function (this: WebSocket, ev: MessageEvent<string>) {
-                console.log(ev.data);
                 switch (Number(ev.data[8])) {
                     case WsMsgType.NoticeNumIncr:
                         //todo
@@ -97,7 +90,7 @@ export default defineComponent({
                         }
                         break;
                     case WsMsgType.MsgRecall:
-                        //todo
+                        //
                         break;
                     default:
                         console.log("未知的WsMsgType：" + Number(ev.data[8]));
@@ -127,7 +120,6 @@ export default defineComponent({
         }
 
         function checkLoginStatus() {
-            loggedIn.value = false;
             let token = getCookie("token");
             if (token !== "") {
                 UserApis.loginByToken().then(res => {
@@ -135,6 +127,7 @@ export default defineComponent({
                         loggedIn.value = true;
                         createWs();
                     } else {
+                        loggedIn.value = false;
                         router.push({path: "/login"});
                     }
                 });
@@ -179,7 +172,14 @@ export default defineComponent({
                     ElMessage.error("加载ChatUserVOList失败");
                 }
             });
+        }
 
+        function logout() {
+            document.cookie = "";
+            loggedIn.value = false;
+            ws.close();
+            chatUserVOList.splice(0);
+            msg2dList.splice(0);
         }
 
         function created() {
@@ -196,9 +196,9 @@ export default defineComponent({
             chatUserVOList,
             msg2dList,
             recall,
-            currentUser,
             updateMsg2dList,
             addToMsg2dList,
+            logout,
         };
     },
 });

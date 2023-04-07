@@ -9,7 +9,8 @@
         <div id="username" :style="{'text-align':  vo.fromCurrentUser?'right':'left'}">{{ vo.from }}</div>
 
         <div class="clear" :style="{'float':  vo.fromCurrentUser?'right':'left', 'width': '450px'}">
-            <div id="content" :style="{float:  vo.fromCurrentUser?'right':'left'}">
+            <div id="content"
+                 :style="{float:  vo.fromCurrentUser?'right':'left','background-color': vo.fromCurrentUser?'rgba(96,215,151,0.8)':'#e6e6e6'}">
                 {{ vo.content }}
             </div>
             <el-button v-if="vo.fromCurrentUser && ((Date.now() - Date.parse(vo.createTime)) / 1000) < 120" id="recall"
@@ -38,9 +39,12 @@ export default defineComponent({
     emits: ["recallEmit"],
     setup(props, context) {
         function recall() {
+            if (((Date.now() - Date.parse(props.vo.createTime)) / 1000) >= 120) {
+                ElMessage.error("只能撤回2分钟内的消息...")
+            }
             TalkApis.recall(props.vo.id).then(res => {
                 if (res.data.code === 200) {
-                    ElMessage.success("撤回成功")
+                    ElMessage.success("撤回成功");
                     context.emit("recallEmit", props.vo.to, props.vo.id);
                 } else {
                     ElMessage.error("撤回失败：" + res.data.message);
@@ -65,9 +69,8 @@ export default defineComponent({
 
 #singleMsg {
     box-sizing: border-box;
-    border: 1px solid red;
-    width: 500px;
-
+    width: 495px;
+    padding-bottom: 10px;
 }
 
 #username {
@@ -78,9 +81,10 @@ export default defineComponent({
 #content {
     float: left;
     margin: 0px;
-    padding: 2px;
+    padding: 5px;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 1px solid #e6f0fd;
+    border-radius: 7px 7px;
     max-width: 350px;
     overflow-wrap: break-word;
     text-align: left;

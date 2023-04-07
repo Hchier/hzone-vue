@@ -3,7 +3,7 @@
         <div id="userList">
             <el-scrollbar>
                 <div v-for="(item, index) in chatUserVOList" :key="item">
-                    <ChatUser :chatUserVO="item" @click="loadMsgList(index, item.sender)"></ChatUser>
+                    <ChatUser id="user" tabindex="1" :chatUserVO="item" @click="loadMsgList(index, item.sender)"></ChatUser>
                 </div>
             </el-scrollbar>
         </div>
@@ -30,7 +30,7 @@
         </div>
 
         <el-dialog
-            :title="'与'+chatUserVOList[msgListIndex].sender+'的历史记录'"
+            :title="'与'+currentChatUser+'的历史记录'"
             v-model="showHistoryMsgs"
             style="width: 560px"
             @close="closeDialog">
@@ -64,7 +64,8 @@ export default defineComponent({
     emits: ["recallEmit", "updateMsg2dListEmit", "addToMsg2dListEmit"],
     setup(props, context) {
         //记录要展示与谁的聊天记录
-        let msgListIndex = ref(0);
+        let msgListIndex = ref(-1);
+        let currentChatUser = ref("");
 
         let showInputArea = ref(false);
 
@@ -82,6 +83,7 @@ export default defineComponent({
                 });
             }
             msgListIndex.value = index;
+            currentChatUser.value = props.chatUserVOList[msgListIndex.value].sender;
             msgContent.value = "";
         }
 
@@ -98,15 +100,14 @@ export default defineComponent({
         }
 
         function loadChatUserVOList() {
-            // TalkApis.getChatUserVOList().then(res => {
-            //     if (res.data.code === 200) {
-            //         let list = res.data.body as Array<ChatUserVO>;
-            //         Object.assign(props.chatUserVOList, [...list]);
-            //     } else {
-            //         ElMessage.error("加载ChatUserVOList失败");
-            //     }
-            // });
-
+            TalkApis.getChatUserVOList().then(res => {
+                if (res.data.code === 200) {
+                    let list = res.data.body as Array<ChatUserVO>;
+                    Object.assign(props.chatUserVOList, [...list]);
+                } else {
+                    ElMessage.error("加载ChatUserVOList失败");
+                }
+            });
         }
 
         //是否展示 查看更多聊天记录的框
@@ -169,7 +170,7 @@ export default defineComponent({
                     context.emit("addToMsg2dListEmit", msgListIndex.value, privateMsgVO);
                     msgContent.value = "";
                 } else {
-                    ElMessage.success("发送失败：" + res.data.message);
+                    ElMessage.error("发送失败：" + res.data.message);
                 }
             });
         }
@@ -203,9 +204,10 @@ export default defineComponent({
     position: relative;
     margin: 0 auto;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 1px solid #f0f2f7;
     width: 700px;
     height: 750px;
+    background-color: white;
 }
 
 #userList {
@@ -213,9 +215,22 @@ export default defineComponent({
     top: 0;
     left: 0;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 1px solid #f0f2f7;
     width: 200px;
     height: 750px;
+}
+
+#user{
+    box-sizing: border-box;
+    border: 1px solid #f0f2f7;
+}
+
+#user:hover{
+    background-color: #e6e6e6;
+}
+
+#user:focus {
+    background-color: #e6e6e6;
 }
 
 #msgList {
@@ -223,7 +238,7 @@ export default defineComponent({
     top: 0;
     right: 0;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 1px solid #e6f0fd;
     width: 500px;
     height: 570px;
 }
@@ -233,7 +248,7 @@ export default defineComponent({
     bottom: 0;
     right: 0;
     box-sizing: border-box;
-    border: 1px solid red;
+    border: 1px solid #f0f2f7;
     width: 500px;
     height: 180px;
 }
