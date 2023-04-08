@@ -42,11 +42,13 @@ import router from "@/router";
 import {PrivateChatMsgVO} from "@/common/vos/PrivateChatMsgVO";
 import {ElMessage} from "element-plus";
 import {ChatUserVO} from "@/common/vos/ChatUserVO";
-import {WsMsgDTO} from "@/common/dtos/WsMsgDTO";
+import {WsMsgDTO} from "@/common/wsMsgs/WsMsgDTO";
 import {WsMsgType} from "@/common/consts/Enums";
 import TalkApis from "@/common/apis/TalkApis";
 import UserApis from "@/common/apis/UserApis";
 import {PrivateMsgRecallDTO} from "@/common/dtos/TalkDTOs";
+import {PrivateChatMsg} from "@/common/wsMsgs/PrivateChatMsg";
+import {PrivateChatRecallMsg} from "@/common/wsMsgs/PrivateChatRecallMsg";
 
 export default defineComponent({
     setup: function (props, context) {
@@ -74,29 +76,37 @@ export default defineComponent({
                         //todo
                         break;
                     case WsMsgType.PrivateChatMsg:
-                        let privateChatMsg = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsgVO>;
+                        let dto1 = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsg>;
                         let added = false;
+                        let privateChatMsgVO: PrivateChatMsgVO = {
+                            id: dto1.body.id,
+                            from: dto1.body.sender,
+                            to: dto1.body.receiver,
+                            content: dto1.body.content,
+                            createTime: dto1.body.createTime,
+                            fromCurrentUser: false,
+                        };
                         chatUserVOList.forEach((value, index) => {
-                            if (value.sender === privateChatMsg.body.from) {
-                                msg2dList[index].push(privateChatMsg.body);
+                            if (value.sender === dto1.body.sender) {
+                                msg2dList[index].push(privateChatMsgVO);
                                 added = true;
                             }
                         });
                         if (!added) {
                             chatUserVOList.push({
-                                sender: privateChatMsg.body.from,
+                                sender: dto1.body.sender,
                                 unReadNum: 1,
                             });
-                            msg2dList[0].push(privateChatMsg.body);
+                            msg2dList[0].push(privateChatMsgVO);
                         }
                         break;
-                    case WsMsgType.PrivateMsgRecall:
-                        let privateMsgRecall = JSON.parse(ev.data) as WsMsgDTO<PrivateMsgRecallDTO>;
+                    case WsMsgType.PrivateChatRecallMsg:
+                        let dto2 = JSON.parse(ev.data) as WsMsgDTO<PrivateChatRecallMsg>;
                         chatUserVOList.forEach((value, index) => {
-                            if (value.sender === privateMsgRecall.body.sender) {
-                                msg2dList[index].forEach((value, index) => {
-                                    if (value.id === privateMsgRecall.body.id){
-                                        msg2dList[index].splice(index, 1);
+                            if (value.sender === dto2.body.sender) {
+                                msg2dList[index].forEach((value, i) => {
+                                    if (value.id === dto2.body.id) {
+                                        msg2dList[index].splice(i, 1);
                                     }
                                 });
                             }
@@ -174,14 +184,14 @@ export default defineComponent({
         }
 
         function loadChatUserVOList() {
-            TalkApis.getChatUserVOList().then(res => {
-                if (res.data.code === 200) {
-                    let list = res.data.body as Array<ChatUserVO>;
-                    chatUserVOList.push(...list);
-                } else {
-                    ElMessage.error("加载ChatUserVOList失败");
-                }
-            });
+            // TalkApis.getChatUserVOList().then(res => {
+            //     if (res.data.code === 200) {
+            //         let list = res.data.body as Array<ChatUserVO>;
+            //         chatUserVOList.push(...list);
+            //     } else {
+            //         ElMessage.error("加载ChatUserVOList失败");
+            //     }
+            // });
         }
 
         function logout() {

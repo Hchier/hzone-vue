@@ -9,7 +9,7 @@
         </div>
 
         <div id="msgList">
-            <el-scrollbar>
+            <el-scrollbar ref="msgListScrollbar">
                 <div v-for="item in msg2dList[msgListIndex]" :key="item.id">
                     <SingleMsg :vo="item" @recallEmit="recall"></SingleMsg>
                 </div>
@@ -69,6 +69,7 @@ export default defineComponent({
 
         let showInputArea = ref(false);
 
+
         function loadMsgList(index: number, username: string) {
             if (props.msg2dList[index] === undefined) {
                 TalkApis.getPrivateMsgsWith(username, 0).then(res => {
@@ -77,10 +78,13 @@ export default defineComponent({
                         list.reverse();
                         showInputArea.value = true;
                         context.emit("updateMsg2dListEmit", index, list);
+                        // this.$refs['msgListScrollbar'].wrap.scrollTop = this.$refs['myScrollbar'].wrap.scrollHeight;
+                        // msgListScrollbar.value!.setScrollTop();
                     } else {
                         ElMessage.error("查找聊天记录失败");
                     }
                 });
+                this.$refs['msgListScrollbar'].wrap.scrollTop = this.$refs['myScrollbar'].wrap.scrollHeight;
             }
             msgListIndex.value = index;
             currentChatUser.value = props.chatUserVOList[msgListIndex.value].sender;

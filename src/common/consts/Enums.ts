@@ -6,6 +6,6 @@ export enum FollowType {
 export enum WsMsgType {
     NoticeNumIncr = 1,
     PrivateChatMsg = 2,
-    PrivateMsgRecall = 3,
+    PrivateChatRecallMsg = 3,
 }
 
