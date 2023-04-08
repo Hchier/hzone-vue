@@ -31,6 +31,7 @@
 import {defineComponent} from "vue";
 import TalkApis from "@/common/apis/TalkApis";
 import {ElMessage} from "element-plus";
+import {PrivateMsgRecallDTO} from "@/common/dtos/TalkDTOs";
 
 
 export default defineComponent({
@@ -40,9 +41,14 @@ export default defineComponent({
     setup(props, context) {
         function recall() {
             if (((Date.now() - Date.parse(props.vo.createTime)) / 1000) >= 120) {
-                ElMessage.error("只能撤回2分钟内的消息...")
+                ElMessage.error("只能撤回2分钟内的消息...");
             }
-            TalkApis.recall(props.vo.id).then(res => {
+            let dto: PrivateMsgRecallDTO = {
+                id: props.vo.id,
+                sender: "",
+                receiver: props.vo.to,
+            };
+            TalkApis.recall(dto).then(res => {
                 if (res.data.code === 200) {
                     ElMessage.success("撤回成功");
                     context.emit("recallEmit", props.vo.to, props.vo.id);

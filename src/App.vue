@@ -46,6 +46,7 @@ import {WsMsgDTO} from "@/common/dtos/WsMsgDTO";
 import {WsMsgType} from "@/common/consts/Enums";
 import TalkApis from "@/common/apis/TalkApis";
 import UserApis from "@/common/apis/UserApis";
+import {PrivateMsgRecallDTO} from "@/common/dtos/TalkDTOs";
 
 export default defineComponent({
     setup: function (props, context) {
@@ -73,24 +74,33 @@ export default defineComponent({
                         //todo
                         break;
                     case WsMsgType.PrivateChatMsg:
-                        let wsMsg = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsgVO>;
+                        let privateChatMsg = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsgVO>;
                         let added = false;
                         chatUserVOList.forEach((value, index) => {
-                            if (value.sender === wsMsg.body.from) {
-                                msg2dList[index].push(wsMsg.body);
+                            if (value.sender === privateChatMsg.body.from) {
+                                msg2dList[index].push(privateChatMsg.body);
                                 added = true;
                             }
                         });
                         if (!added) {
                             chatUserVOList.push({
-                                sender: wsMsg.body.from,
+                                sender: privateChatMsg.body.from,
                                 unReadNum: 1,
                             });
-                            msg2dList[0].push(wsMsg.body);
+                            msg2dList[0].push(privateChatMsg.body);
                         }
                         break;
-                    case WsMsgType.MsgRecall:
-                        //
+                    case WsMsgType.PrivateMsgRecall:
+                        let privateMsgRecall = JSON.parse(ev.data) as WsMsgDTO<PrivateMsgRecallDTO>;
+                        chatUserVOList.forEach((value, index) => {
+                            if (value.sender === privateMsgRecall.body.sender) {
+                                msg2dList[index].forEach((value, index) => {
+                                    if (value.id === privateMsgRecall.body.id){
+                                        msg2dList[index].splice(index, 1);
+                                    }
+                                });
+                            }
+                        });
                         break;
                     default:
                         console.log("未知的WsMsgType：" + Number(ev.data[8]));

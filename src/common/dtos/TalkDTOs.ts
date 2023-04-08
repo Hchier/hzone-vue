@@ -11,3 +11,8 @@ export  type PrivateChatAddSuccessDTO = {
     createTime: string,
 }
 
+export type PrivateMsgRecallDTO = {
+    id: number,
+    sender: string,
+    receiver: string,
+}
