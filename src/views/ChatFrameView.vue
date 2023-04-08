@@ -3,13 +3,14 @@
         <div id="userList">
             <el-scrollbar>
                 <div v-for="(item, index) in chatUserVOList" :key="item">
-                    <ChatUser id="user" tabindex="1" :chatUserVO="item" @click="loadMsgList(index, item.sender)"></ChatUser>
+                    <ChatUser id="user" tabindex="1" :chatUserVO="item"
+                              @click="loadMsgList(index, item.sender)"></ChatUser>
                 </div>
             </el-scrollbar>
         </div>
 
         <div id="msgList">
-            <el-scrollbar ref="msgListScrollbar">
+            <el-scrollbar ref="msgListScrollbarRef">
                 <div v-for="item in msg2dList[msgListIndex]" :key="item.id">
                     <SingleMsg :vo="item" @recallEmit="recall"></SingleMsg>
                 </div>
@@ -45,12 +46,12 @@
 </template>
 
 <script lang=ts>
-import {defineComponent, reactive, ref} from "vue";
+import {defineComponent, onBeforeUnmount, onMounted, reactive, ref, watch} from "vue";
 import ChatUser from "@/components/ChatUserComponent.vue";
 import SingleMsg from "@/components/SingleMsgComponent.vue";
 import {PrivateChatMsgVO} from "@/common/vos/PrivateChatMsgVO";
 import TalkApis from "@/common/apis/TalkApis";
-import {ElMessage} from "element-plus";
+import {ElMessage, ElScrollbar} from "element-plus";
 import {ChatUserVO} from "@/common/vos/ChatUserVO";
 import {PrivateChatAddDTO, PrivateChatAddSuccessDTO} from "@/common/dtos/TalkDTOs";
 
@@ -66,9 +67,8 @@ export default defineComponent({
         //记录要展示与谁的聊天记录
         let msgListIndex = ref(-1);
         let currentChatUser = ref("");
-
         let showInputArea = ref(false);
-
+        let msgListScrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 
         function loadMsgList(index: number, username: string) {
             if (props.msg2dList[index] === undefined) {
@@ -78,17 +78,16 @@ export default defineComponent({
                         list.reverse();
                         showInputArea.value = true;
                         context.emit("updateMsg2dListEmit", index, list);
-                        // this.$refs['msgListScrollbar'].wrap.scrollTop = this.$refs['myScrollbar'].wrap.scrollHeight;
                         // msgListScrollbar.value!.setScrollTop();
                     } else {
                         ElMessage.error("查找聊天记录失败");
                     }
                 });
-                this.$refs['msgListScrollbar'].wrap.scrollTop = this.$refs['myScrollbar'].wrap.scrollHeight;
             }
             msgListIndex.value = index;
             currentChatUser.value = props.chatUserVOList[msgListIndex.value].sender;
             msgContent.value = "";
+            scrollToBottom();
         }
 
 
@@ -173,11 +172,30 @@ export default defineComponent({
                     };
                     context.emit("addToMsg2dListEmit", msgListIndex.value, privateMsgVO);
                     msgContent.value = "";
+                    // scrollToBottom();
                 } else {
                     ElMessage.error("发送失败：" + res.data.message);
                 }
             });
         }
+
+        //监听
+        watch(props.msg2dList, (newVal, oldValue) => {
+            console.log("changed");
+            scrollToBottom();
+        });
+
+        //滚到最底部。到顶部的高度应该计算出来，但是我不会
+        function scrollToBottom() {
+            return setTimeout(function () {
+                msgListScrollbarRef.value?.setScrollTop(1000000);
+            }, 50); // 定时时间
+
+        }
+
+        onBeforeUnmount(() => {
+            clearTimeout(scrollToBottom());
+        });
 
         function created() {
             loadChatUserVOList();
@@ -198,6 +216,7 @@ export default defineComponent({
             closeDialog,
             msgContent,
             sendMsg,
+            msgListScrollbarRef,
         };
     },
 });
@@ -224,12 +243,12 @@ export default defineComponent({
     height: 750px;
 }
 
-#user{
+#user {
     box-sizing: border-box;
     border: 1px solid #f0f2f7;
 }
 
-#user:hover{
+#user:hover {
     background-color: #e6e6e6;
 }
 

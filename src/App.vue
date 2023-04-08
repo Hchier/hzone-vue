@@ -49,6 +49,7 @@ import UserApis from "@/common/apis/UserApis";
 import {PrivateMsgRecallDTO} from "@/common/dtos/TalkDTOs";
 import {PrivateChatMsg} from "@/common/wsMsgs/PrivateChatMsg";
 import {PrivateChatRecallMsg} from "@/common/wsMsgs/PrivateChatRecallMsg";
+import {getCookie, setCookie} from "@/utils/cookies";
 
 export default defineComponent({
     setup: function (props, context) {
@@ -126,18 +127,6 @@ export default defineComponent({
             };
         }
 
-        function getCookie(name: string): string {
-            if (document.cookie.length > 0) {
-                let arr = document.cookie.split('; ');//注意：分号+空格
-                for (let i = 0; i < arr.length; i++) {
-                    let index = arr[i].indexOf("=");
-                    if (arr[i].substring(0, index) === name) {
-                        return arr[i].substring(index + 1);
-                    }
-                }
-            }
-            return "";
-        }
 
         function checkLoginStatus() {
             let token = getCookie("token");
@@ -195,7 +184,7 @@ export default defineComponent({
         }
 
         function logout() {
-            document.cookie = "";
+            setCookie("token", "", -1);
             loggedIn.value = false;
             ws.close();
             chatUserVOList.splice(0);
