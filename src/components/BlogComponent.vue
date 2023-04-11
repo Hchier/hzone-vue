@@ -6,7 +6,7 @@
             src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
         />
 
-        <span id="publisher">{{ blogVO.publisher }}</span>
+        <span id="sender">{{ blogVO.publisher }}</span>
 
         <a id="title" v-bind:href="'/blog/' + blogVO.id"> <font size="5">{{ blogVO.title }}</font></a>
 
@@ -303,7 +303,7 @@ export default defineComponent({
     left: 10px;
 }
 
-#publisher {
+#sender {
     position: absolute;
     top: 20px;
     left: 75px;

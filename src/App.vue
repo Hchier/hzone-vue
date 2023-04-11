@@ -6,17 +6,25 @@
         </el-header>
 
         <el-header id="header" v-show="loggedIn">
-            <router-link to="/">首页</router-link>
+            <el-badge class="link" :hidden="true">
+                <router-link to="/">首页</router-link>
+            </el-badge>
             |
-            <router-link to="/zone">个人空间</router-link>
+            <el-badge class="link" :hidden="true">
+                <router-link to="/zone">个人空间</router-link>
+            </el-badge>
             |
-            <el-badge :value="200" :max="99" class="item">
+            <el-badge class="link" :value="200" :max="99">
                 <router-link to="/notice">通知</router-link>
             </el-badge>
             |
-            <router-link to="/privateChat">私信</router-link>
+            <el-badge class="link" :value="200" :max="99">
+                <router-link to="/privateChat">私信</router-link>
+            </el-badge>
             |
-            <router-link to="/login" @click="logout">登出</router-link>
+            <el-badge class="link" :hidden="true">
+                <router-link to="/login" @click="logout">登出</router-link>
+            </el-badge>
         </el-header>
 
         <el-main>
@@ -231,6 +239,10 @@ export default defineComponent({
             color: #42b983;
         }
     }
+}
+
+.link{
+    margin: 0 20px;
 }
 
 #footer {

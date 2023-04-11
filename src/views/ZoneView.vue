@@ -24,7 +24,7 @@
             <div class="contentButton" tabindex="1" @click="getFollowUserList">关注用户</div>
             <div class="contentButton" tabindex="1" @click="getFollowTopicList">关注列表</div>
             <div class="contentButton" tabindex="1" @click="getFansList">粉丝列表</div>
-            <div class="contentButton" tabindex="1">留言墙</div>
+            <div class="contentButton" tabindex="1" @click="showWall">留言墙</div>
 
             <div v-for="item in publishedList" v-bind:key="item.id" v-show="showPublishedList">
                 <Blog :blogVO="item" :autoUnfold="false"></Blog>
@@ -61,6 +61,7 @@
                 </div>
             </el-dialog>
 
+            <Wall :username="userVO.username" v-if="showMsgWall"></Wall>
         </div>
     </div>
 </template>
@@ -82,6 +83,8 @@ import FollowUser from "@/components/FollowUserComponent.vue";
 import FollowTopic from "@/components/FollowTopicComponent.vue";
 import {FollowUserVO} from "@/common/vos/FollowUserVO";
 import {FollowTopicVO} from "@/common/vos/FollowTopicVO";
+import Wall from "@/components/WallComponent.vue";
+
 
 export default defineComponent({
     name: "ZoneView",
@@ -89,6 +92,7 @@ export default defineComponent({
         Blog,
         FollowUser,
         FollowTopic,
+        Wall,
     },
     setup() {
         let userVO: UserVO = reactive({
@@ -148,7 +152,6 @@ export default defineComponent({
             while (userVO.username === "") {
                 await sleep(100);
             }
-            console.log(111);
             setVisible(showPublishedList);
             if (publishedListPageNum === 0 && publishedList.length > 0) {
                 return;
@@ -156,6 +159,10 @@ export default defineComponent({
             BlogApis.getPublishedList(userVO.username, publishedListPageNum).then(res => {
                 if (res.data.code === 200) {
                     let list = res.data.body as Array<BlogVO>;
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多内容");
+                        return;
+                    }
                     publishedList.push(...list);
                 } else {
                     ElMessage.error("查找失败：" + res.data.message);
@@ -181,6 +188,7 @@ export default defineComponent({
                     let list = res.data.body as Array<BlogVO>;
                     if (list.length === 0) {
                         ElMessage.error("暂无更多内容");
+                        return;
                     }
                     favorList.push(...list);
                     ElMessage.success("查找成功");
@@ -281,6 +289,10 @@ export default defineComponent({
             getFansList();
         }
 
+        function showWall() {
+            setVisible(showMsgWall);
+        }
+
         function created() {
             getUserVO();
             getPublishedList();
@@ -311,6 +323,7 @@ export default defineComponent({
             fansList,
             getFansList,
             loadMoreFansList,
+            showWall,
         };
     },
 });

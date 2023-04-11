@@ -1,7 +1,7 @@
 <template>
     <div id="BlogComment" class="clear" v-show="visible">
         <el-avatar id="avatar" :size="50" :src="blogCommentVO.publisher"/>
-        <span id="publisher">
+        <span id="sender">
             <span>{{ blogCommentVO.publisher }}</span>
             <span
                 v-show="blogCommentVO.baseComment !== -1"> 回复 {{ blogCommentVO.receiver }}</span>
@@ -175,7 +175,7 @@ export default defineComponent({
     left: 10px;
 }
 
-#publisher {
+#sender {
     position: absolute;
     top: 10px;
     left: 80px;

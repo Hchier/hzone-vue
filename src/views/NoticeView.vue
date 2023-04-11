@@ -25,9 +25,7 @@ export default defineComponent({
             NoticeApis.get(pageNum++).then(res => {
                 if (res.data.code === 200) {
                     let arr = res.data.body as Array<NoticeVO>;
-                    arr.forEach(value => {
-                        vos.push(value);
-                    });
+                    vos.push(...arr);
                 } else {
                     ElMessage.error("加载失败: " + res.data.message);
                 }
