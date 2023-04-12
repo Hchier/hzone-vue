@@ -22,7 +22,7 @@
 
     <el-input style="margin-top: 20px" v-model="input" placeholder="请输入..."></el-input>
     <el-button type="primary" @click="add">提交</el-button>
-    <button @click="console.log(barrage)">ok</button>
+
 </template>
 
 <script lang=ts>

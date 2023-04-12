@@ -8,11 +8,11 @@
 
         <span id="sender">{{ blogVO.publisher }}</span>
 
-        <a id="title" v-bind:href="'/blog/' + blogVO.id"> <font size="5">{{ blogVO.title }}</font></a>
+        <a id="title" v-bind:href="'/blog/' + blogVO.id">{{ blogVO.title }}</a>
 
         <a id="topic" href="">{{ blogVO.topic }}</a>
 
-        <div id="content">{{ blogVO.content }}</div>
+        <div id="content" v-html="blogVO.content"></div>
 
         <el-button id="unfoldButton" type="primary" @click="unfold" v-show="foldStatus">展开</el-button>
 
@@ -313,6 +313,7 @@ export default defineComponent({
     top: 20px;
     margin: 20px auto;
     display: inline-block;
+    font-size: 25px;
 }
 
 #topic {

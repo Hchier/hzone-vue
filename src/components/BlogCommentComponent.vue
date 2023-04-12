@@ -6,7 +6,7 @@
             <span
                 v-show="blogCommentVO.baseComment !== -1"> 回复 {{ blogCommentVO.receiver }}</span>
         </span>
-        <span id="content">{{ blogCommentVO.content }}</span>
+        <span id="content" v-html="blogCommentVO.content"></span>
         <p id="createTime">发布于 {{ blogCommentVO.createTime }}</p>
 
         <el-popover placement="right" trigger="hover">
