@@ -5,5 +5,5 @@ export default {
     login: (userLoginDTO: UserLoginDTO) => postWithoutJson("/user/login", userLoginDTO),
     getUserVO: (username: string) => post("/user/vo?username=" + username),
     loginByToken: () => post("/user/loginByToken"),
-    deletePicList: (list: string[]) => postWithoutJson("/user/deletePicList", list),
+    deleteResourceList: (list: string[]) => postWithoutJson("/user/deleteResourceList", list),
 };

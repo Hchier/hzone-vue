@@ -38,8 +38,8 @@ const routes: Array<RouteRecordRaw> = [
             import(/* webpackChunkName: "about" */ "../views/ChatFrameView.vue"),
     },
     {
-        path: "/h",
-        name: "h",
+        path: "/blogUpdate",
+        name: "blogUpdate",
         component: () =>
             import(/* webpackChunkName: "about" */ "../views/BlogUpdateView.vue"),
     },

@@ -49,6 +49,10 @@ export default defineComponent({
         const picListInserted: string[] = [];
         // 一开始就存在的图片的地址
         const picListExistedFromTheBeginning: string[] = [];
+        // 插入过的视频的地址
+        const videoListInserted: string[] = [];
+        // 一开始就存在的视频的地址
+        const videoListExistedFromTheBeginning: string[] = [];
 
         const toolbarConfig: Partial<IToolbarConfig> = {};
 
@@ -60,9 +64,9 @@ export default defineComponent({
         // 图片配置
         editorConfig.MENU_CONF['uploadImage'] = {
             // 上传图片的api
-            server: "http://localhost:9527/user/uploadPic",
+            server: "http://localhost:9527/user/uploadResource",
             // form-data fieldName
-            fieldName: "pic",
+            fieldName: "resource",
             // 跨域是否传递 cookie
             withCredentials: true,
 
@@ -95,8 +99,8 @@ export default defineComponent({
 
 
         editorConfig.MENU_CONF['uploadVideo'] = {
-            server: "http://localhost:9527/user/uploadVideo",
-            fieldName: "video",
+            server: "http://localhost:9527/user/uploadResource",
+            fieldName: "resource",
             maxFileSize: 100 * 1024 * 1024, // 100M
             withCredentials: true,
 
@@ -119,11 +123,12 @@ export default defineComponent({
 
         editorConfig.MENU_CONF['insertVideo'] = {
             onInsertedVideo(videoNode: any | null) {  // TS 语法
-                if (videoNode == null) return
-                const { src } = videoNode
-                console.log('inserted video', src)
+                if (videoNode == null) return;
+                //              封面
+                const {src, poster} = videoNode;
+                videoListInserted.push(src);
             },
-        }
+        };
 
         watch(valueHtml, (newVal, oldValue) => {
             // 监视valueHtml，发生变化后同步给父组件
@@ -142,38 +147,53 @@ export default defineComponent({
             editorRef.value = editor;
             // console.log(editor.getConfig());
             //记录一开始就存在的图片的地址
-            picListExistedFromTheBeginning.push(...getPicList());
+            picListExistedFromTheBeginning.push(...getList("image"));
+            videoListExistedFromTheBeginning.push(...getList("video"));
         };
 
         //得到编辑框中的图片href列表
-        function getPicList(): string[] {
+        function getList(type: "image" | "video"): string[] {
             const editor = editorRef.value;
-            let list: any[] = editor.getElemsByType('image');
+            let list: any[] = editor.getElemsByType(type);
             let res: string[] = [];
             list.forEach(value => {
-                res.push(value.href);
+                if (type === "image") {
+                    res.push(value.href);
+                } else {
+                    res.push(value.src);
+                }
             });
             return res;
         }
 
-        //删除多余的图片
-        function deletePic() {
-            let picSetExist: Set<string> = new Set<string>();
-            for (const item of getPicList()) {
-                picSetExist.add(item);
+        function getUselessPicOrVideo(type: "image" | "video", listInserted: Array<string>, listExistedFromTheBeginning: string[]): string[] {
+            let setExist: Set<string> = new Set<string>();
+            for (const item of getList(type)) {
+                setExist.add(item);
             }
-            let picListToDelete: string[] = [];
-            picListInserted.forEach(value => {
-                if (!picSetExist.has(value)) {
-                    picListToDelete.push(value);
+            let listDeleted: string[] = [];
+            listInserted.forEach(value => {
+                if (!setExist.has(value)) {
+                    listDeleted.push(value);
                 }
             });
-            picListExistedFromTheBeginning.forEach(value => {
-                if (!picSetExist.has(value)) {
-                    picListToDelete.push(value);
+            listExistedFromTheBeginning.forEach(value => {
+                if (!setExist.has(value)) {
+                    listDeleted.push(value);
                 }
             });
-            UserApis.deletePicList(picListToDelete).then(res => {
+            return listDeleted;
+        }
+
+
+        //删除多余的图片或视频
+        function deleteUseless() {
+            UserApis.deleteResourceList(
+                [
+                    ...getUselessPicOrVideo("image", picListInserted, picListExistedFromTheBeginning),
+                    ...getUselessPicOrVideo("video", videoListInserted, videoListExistedFromTheBeginning),
+                ],
+            ).then(res => {
                 if (res.data.code === 200) {
                 } else {
                 }
@@ -181,7 +201,7 @@ export default defineComponent({
         }
 
         function submit() {
-            deletePic();
+            deleteUseless();
             context.emit("submitEmit");
         }
 
