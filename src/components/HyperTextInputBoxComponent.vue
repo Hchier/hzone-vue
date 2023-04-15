@@ -60,6 +60,7 @@ export default defineComponent({
         const editorConfig: Partial<IEditorConfig> = {
             placeholder: '请输入内容...',
         };
+
         editorConfig.MENU_CONF = {};
         // 图片配置
         editorConfig.MENU_CONF['uploadImage'] = {
@@ -88,13 +89,22 @@ export default defineComponent({
             },
         };
 
+        //转换图片链接
+        function customParseImageSrc(src: string): string {
+            //后端返回的是相对路径
+            return "http://localhost:7010" + src;
+        }
+
         editorConfig.MENU_CONF['insertImage'] = {
             //插入图片之后的回调
             onInsertedImage(imageNode: any | null) {
                 if (imageNode == null) return;
                 const {src, alt, url, href} = imageNode;
                 picListInserted.push(src);
+                console.log(src);
             },
+
+            parseImageSrc: customParseImageSrc,
         };
 
 
@@ -121,6 +131,12 @@ export default defineComponent({
             },
         };
 
+        //转换视频链接
+        function customParseVideoSrc(src: string): string {
+            //后端返回的是相对路径
+            return "http://localhost:7010" + src;
+        }
+
         editorConfig.MENU_CONF['insertVideo'] = {
             onInsertedVideo(videoNode: any | null) {  // TS 语法
                 if (videoNode == null) return;
@@ -128,6 +144,7 @@ export default defineComponent({
                 const {src, poster} = videoNode;
                 videoListInserted.push(src);
             },
+            parseVideoSrc: customParseVideoSrc,
         };
 
         watch(valueHtml, (newVal, oldValue) => {

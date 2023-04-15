@@ -9,4 +9,5 @@ export default {
     blogFavor: (blogId: number, author: string) => post("/blog/favor/" + blogId + "/" + author),
     blogUnFavor: (blogId: number, author: string) => post("/blog/unFavor/" + blogId + "/" + author),
     blogUpdate: (dto: BlogUpdateDTO) => postWithoutJson("/blog/update", dto),
+    getListByTopic: (name: string, pageNum: number) => post("/blog/listByTopic/" + name + "/" + pageNum),
 };

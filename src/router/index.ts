@@ -47,7 +47,7 @@ const routes: Array<RouteRecordRaw> = [
         path: "/h",
         name: "h",
         component: () =>
-            import(/* webpackChunkName: "about" */ "../components/SingleHotTopicComponent.vue"),
+            import(/* webpackChunkName: "about" */ "../views/TopicView.vue"),
     },
 ];
 
