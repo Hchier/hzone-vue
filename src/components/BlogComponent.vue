@@ -8,9 +8,9 @@
 
         <span id="sender">{{ blogVO.publisher }}</span>
 
-        <a id="title" v-bind:href="'/blog/' + blogVO.id">{{ blogVO.title }}</a>
+        <router-link id="title" :to="'/blog/' + blogVO.id">{{ blogVO.title }}</router-link>
 
-        <a id="topic" href="">{{ blogVO.topic }}</a>
+        <router-link id="topic" to="/">{{ blogVO.topic }}</router-link>
 
         <div id="content" v-html="blogVO.content"></div>
 
@@ -328,6 +328,7 @@ export default defineComponent({
     overflow-wrap: break-word;
     text-align: left;
     overflow: hidden;
+    text-overflow: ellipsis;
     height: 60px;
 }
 

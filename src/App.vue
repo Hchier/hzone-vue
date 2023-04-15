@@ -250,4 +250,8 @@ export default defineComponent({
     bottom: 0;
     display: block;
 }
+
+p{
+    margin: 0;
+}
 </style>

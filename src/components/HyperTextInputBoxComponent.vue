@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="box">
         <div style="border: 1px solid #ccc">
             <Toolbar
                 style="border-bottom: 1px solid #ccc"
@@ -202,6 +202,7 @@ export default defineComponent({
 
         function submit() {
             deleteUseless();
+            valueHtml.value = "";
             context.emit("submitEmit");
         }
 

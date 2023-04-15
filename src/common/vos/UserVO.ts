@@ -7,4 +7,5 @@ export  type UserVO = {
     followNum: number,
     followedNum: number,
     followed: boolean
+    isOnline: boolean,
 }

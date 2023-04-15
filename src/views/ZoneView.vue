@@ -12,6 +12,11 @@
                 <span id="followedNum" class="num">{{ userVO.followedNum }}粉丝</span>
             </div>
 
+            <div id="isOnline">
+                <span v-if="userVO.isOnline" style="color: #429e83">在线</span>
+                <span v-else style="color: red">离线</span>
+            </div>
+
             <div id="followed">
                 <el-button v-show="userVO.followed" type="primary">已关注</el-button>
                 <el-button v-show="!userVO.followed" plain>未关注</el-button>
@@ -104,6 +109,7 @@ export default defineComponent({
             followNum: 0,
             followedNum: 0,
             followed: false,
+            isOnline: false,
         });
 
         function getUserVO() {
@@ -386,10 +392,16 @@ export default defineComponent({
     padding: 0 40px 0 0;
 }
 
+#isOnline{
+    position: absolute;
+    left: 310px;
+    top: 45px;
+}
+
 #followed {
     position: absolute;
     left: 360px;
-    top: 30px;
+    top: 40px;
 }
 
 #content {

@@ -9,9 +9,10 @@
         <div id="username" :style="{'text-align':  vo.fromCurrentUser?'right':'left'}">{{ vo.from }}</div>
 
         <div class="clear" :style="{'float':  vo.fromCurrentUser?'right':'left', 'width': '450px'}">
-            <div id="content"
-                 :style="{float:  vo.fromCurrentUser?'right':'left','background-color': vo.fromCurrentUser?'rgba(96,215,151,0.8)':'#e6e6e6'}">
-                {{ vo.content }}
+            <div
+                id="content"
+                v-html="vo.content"
+                :style="{float:  vo.fromCurrentUser?'right':'left','background-color': vo.fromCurrentUser?'rgba(96,215,151,0.8)':'#e6e6e6'}">
             </div>
             <el-button v-if="vo.fromCurrentUser && ((Date.now() - Date.parse(vo.createTime)) / 1000) < 120" id="recall"
                        type="primary" size="small" :style="{'float': 'right'}"
@@ -94,6 +95,9 @@ export default defineComponent({
     max-width: 350px;
     overflow-wrap: break-word;
     text-align: left;
+
+
+
 }
 
 #createTime {
@@ -104,5 +108,4 @@ export default defineComponent({
 #recall {
     padding: 1px 3px;
 }
-
 </style>

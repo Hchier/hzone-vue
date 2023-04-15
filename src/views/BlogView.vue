@@ -70,7 +70,7 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style scoped>
 #father {
     margin: 0 auto;
     width: 700px;

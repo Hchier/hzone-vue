@@ -21,13 +21,18 @@
         </div>
 
         <div id="inputArea" v-if="showInputArea">
-            <el-input
-                v-model="msgContent"
-                :autosize="{ minRows: 6, maxRows: 6 }"
-                type="textarea"
-                placeholder="请输入..."
-            />
-            <el-button type="primary" @click="sendMsg">发送</el-button>
+            <!--            <el-input-->
+            <!--                v-model="msgContent"-->
+            <!--                :autosize="{ minRows: 6, maxRows: 6 }"-->
+            <!--                type="textarea"-->
+            <!--                placeholder="请输入..."-->
+            <!--            />-->
+            <!--            <el-button type="primary" @click="sendMsg">发送</el-button>-->
+            <HyperTextInputBox
+                v-model:content="msgContent"
+                @submitEmit="sendMsg"
+                v-if="showInputArea">
+            </HyperTextInputBox>
         </div>
 
         <el-dialog
@@ -54,6 +59,7 @@ import TalkApis from "@/common/apis/TalkApis";
 import {ElMessage, ElScrollbar} from "element-plus";
 import {ChatUserVO} from "@/common/vos/ChatUserVO";
 import {PrivateChatAddDTO, PrivateChatAddSuccessDTO} from "@/common/dtos/TalkDTOs";
+import HyperTextInputBox from "@/components/HyperTextInputBoxComponent.vue";
 
 export default defineComponent({
     name: "ChatFrameView",
@@ -61,6 +67,7 @@ export default defineComponent({
     components: {
         ChatUser,
         SingleMsg,
+        HyperTextInputBox,
     },
     emits: ["recallEmit", "updateMsg2dListEmit", "addToMsg2dListEmit"],
     setup(props, context) {
@@ -217,6 +224,7 @@ export default defineComponent({
             msgContent,
             sendMsg,
             msgListScrollbarRef,
+            currentChatUser,
         };
     },
 });
@@ -229,7 +237,7 @@ export default defineComponent({
     box-sizing: border-box;
     border: 1px solid #f0f2f7;
     width: 700px;
-    height: 750px;
+    height: 1060px;
     background-color: white;
 }
 
@@ -263,16 +271,18 @@ export default defineComponent({
     box-sizing: border-box;
     border: 1px solid #e6f0fd;
     width: 500px;
-    height: 570px;
+    height: 400px;
 }
 
 #inputArea {
     position: absolute;
-    bottom: 0;
+    top: 400px;
     right: 0;
     box-sizing: border-box;
     border: 1px solid #f0f2f7;
     width: 500px;
-    height: 180px;
+    /*height: 450px;*/
 }
+
+
 </style>
