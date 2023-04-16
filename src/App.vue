@@ -31,10 +31,10 @@
             <router-view
                 @loginSuccessEmit="loginSuccess"
                 :chatUserVOList="chatUserVOList"
-                :msg2dList="msg2dList"
-                @recallEmit="recall"
-                @updateMsg2dListEmit="updateMsg2dList"
-                @addToMsg2dListEmit="addToMsg2dList"
+                :privateChatMsg2dList="privateChatMsg2dList"
+                @recall="recall"
+                @updatePrivateChatMsg2dListEmit="updatePrivateChatMsg2dList"
+                @addToPrivateChatMsg2dList="addToPrivateChatMsg2dList"
             />
         </el-main>
 
@@ -47,17 +47,18 @@
 
 import {defineComponent, reactive, ref} from "vue";
 import router from "@/router";
-import {PrivateChatMsgVO} from "@/common/vos/PrivateChatMsgVO";
 import {ElMessage} from "element-plus";
 import {ChatUserVO} from "@/common/vos/ChatUserVO";
 import {WsMsgDTO} from "@/common/wsMsgs/WsMsgDTO";
-import {WsMsgType} from "@/common/consts/Enums";
+import {ChatMsgType, WsMsgType} from "@/common/consts/Enums";
 import TalkApis from "@/common/apis/TalkApis";
 import UserApis from "@/common/apis/UserApis";
 import {PrivateMsgRecallDTO} from "@/common/dtos/TalkDTOs";
 import {PrivateChatMsg} from "@/common/wsMsgs/PrivateChatMsg";
 import {PrivateChatRecallMsg} from "@/common/wsMsgs/PrivateChatRecallMsg";
 import {getCookie, setCookie} from "@/utils/cookies";
+import {ChatMsgVO} from "@/common/vos/ChatMsgVO";
+import {BroadcastChatMsg} from "@/common/wsMsgs/BroadcastChatMsg";
 
 export default defineComponent({
     setup: function (props, context) {
@@ -80,46 +81,59 @@ export default defineComponent({
                 loggedIn.value = true;
             };
             ws.onmessage = function (this: WebSocket, ev: MessageEvent<string>) {
+                console.log(ev.data);
                 switch (Number(ev.data[8])) {
                     case WsMsgType.NoticeNumIncr:
                         //todo
                         break;
                     case WsMsgType.PrivateChatMsg:
-                        let dto1 = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsg>;
+                        let privateChatMsgDTO = JSON.parse(ev.data) as WsMsgDTO<PrivateChatMsg>;
                         let added = false;
-                        let privateChatMsgVO: PrivateChatMsgVO = {
-                            id: dto1.body.id,
-                            from: dto1.body.sender,
-                            to: dto1.body.receiver,
-                            content: dto1.body.content,
-                            createTime: dto1.body.createTime,
+                        let privateChatMsgVO: ChatMsgVO = {
+                            id: privateChatMsgDTO.body.id,
+                            from: privateChatMsgDTO.body.sender,
+                            to: privateChatMsgDTO.body.receiver,
+                            content: privateChatMsgDTO.body.content,
+                            createTime: privateChatMsgDTO.body.createTime,
                             fromCurrentUser: false,
                         };
                         chatUserVOList.forEach((value, index) => {
-                            if (value.sender === dto1.body.sender) {
-                                msg2dList[index].push(privateChatMsgVO);
+                            if (value.sender === privateChatMsgDTO.body.sender) {
+                                privateChatMsg2dList[index].push(privateChatMsgVO);
                                 added = true;
                             }
                         });
                         if (!added) {
                             chatUserVOList.push({
-                                sender: dto1.body.sender,
+                                sender: privateChatMsgDTO.body.sender,
                                 unReadNum: 1,
                             });
-                            msg2dList[0].push(privateChatMsgVO);
+                            privateChatMsg2dList[0].push(privateChatMsgVO);
                         }
                         break;
                     case WsMsgType.PrivateChatRecallMsg:
-                        let dto2 = JSON.parse(ev.data) as WsMsgDTO<PrivateChatRecallMsg>;
+                        let privateChatRecallMsgDTO = JSON.parse(ev.data) as WsMsgDTO<PrivateChatRecallMsg>;
                         chatUserVOList.forEach((value, index) => {
-                            if (value.sender === dto2.body.sender) {
-                                msg2dList[index].forEach((value, i) => {
-                                    if (value.id === dto2.body.id) {
-                                        msg2dList[index].splice(i, 1);
+                            if (value.sender === privateChatRecallMsgDTO.body.sender) {
+                                privateChatMsg2dList[index].forEach((value, i) => {
+                                    if (value.id === privateChatRecallMsgDTO.body.id) {
+                                        privateChatMsg2dList[index].splice(i, 1);
                                     }
                                 });
                             }
                         });
+                        break;
+                    case WsMsgType.BroadcastChatMsg:
+                        let broadcastChatMsgDTO = JSON.parse(ev.data) as WsMsgDTO<BroadcastChatMsg>;
+                        let broadcastChatMsgVO: ChatMsgVO = {
+                            id: broadcastChatMsgDTO.body.id,
+                            from: broadcastChatMsgDTO.body.sender,
+                            to: broadcastChatMsgDTO.body.receiver,
+                            content: broadcastChatMsgDTO.body.content,
+                            createTime: broadcastChatMsgDTO.body.createTime,
+                            fromCurrentUser: false,
+                        };
+                        broadcastMsgList.push(broadcastChatMsgVO);
                         break;
                     default:
                         console.log("未知的WsMsgType：" + Number(ev.data[8]));
@@ -152,43 +166,51 @@ export default defineComponent({
         }
 
         let chatUserVOList: ChatUserVO[] = reactive([]);
-        let msg2dList: PrivateChatMsgVO[][] = reactive([]);
+        let privateChatMsg2dList: ChatMsgVO[][] = reactive([]);
 
-        function recall(receiver: string, id: number) {
-            let index = -1;
-            for (let i = 0; i < chatUserVOList.length; i++) {
-                if (receiver === chatUserVOList[i].sender) {
-                    index = i;
-                    break;
+        //可能撤回私信或广播消息
+        function recall(chatMsgType: number, receiver: string, id: number) {
+            //撤回私信
+            if (chatMsgType === ChatMsgType.PrivateChatMsg) {
+                let index = -1;
+                for (let i = 0; i < chatUserVOList.length; i++) {
+                    if (receiver === chatUserVOList[i].sender) {
+                        index = i;
+                        break;
+                    }
                 }
-            }
-            if (index === -1) {
-                return;
-            }
-            msg2dList[index].forEach((value, i) => {
-                if (value.id === id) {
-                    msg2dList[index].splice(i, 1);
+                if (index === -1) {
+                    return;
                 }
-            });
+                privateChatMsg2dList[index].forEach((value, i) => {
+                    if (value.id === id) {
+                        privateChatMsg2dList[index].splice(i, 1);
+                    }
+                });
+            }
+            //撤回广播消息
+            else {
+                broadcastMsgList.forEach((value, index) => {
+                    if (value.id === id) {
+                        broadcastMsgList.splice(index, 1);
+                    }
+                });
+            }
         }
 
-        function updateMsg2dList(index: number, list: Array<PrivateChatMsgVO>) {
-            msg2dList[index] = list;
+        function updatePrivateChatMsg2dList(index: number, list: Array<ChatMsgVO>) {
+            privateChatMsg2dList[index] = list;
         }
 
-        function addToMsg2dList(index: number, vo: PrivateChatMsgVO) {
-            msg2dList[index].push(vo);
+        function addToPrivateChatMsg2dList(index: number, vo: ChatMsgVO) {
+            privateChatMsg2dList[index].push(vo);
         }
 
-        function loadChatUserVOList() {
-            // TalkApis.getChatUserVOList().then(res => {
-            //     if (res.data.code === 200) {
-            //         let list = res.data.body as Array<ChatUserVO>;
-            //         chatUserVOList.push(...list);
-            //     } else {
-            //         ElMessage.error("加载ChatUserVOList失败");
-            //     }
-            // });
+        //广播消息
+        let broadcastMsgList: Array<ChatMsgVO> = reactive([]);
+
+        function addToBroadcastMsgList(vo: ChatMsgVO) {
+            broadcastMsgList.push(vo);
         }
 
         function logout() {
@@ -196,12 +218,11 @@ export default defineComponent({
             loggedIn.value = false;
             ws.close();
             chatUserVOList.splice(0);
-            msg2dList.splice(0);
+            privateChatMsg2dList.splice(0);
         }
 
         function created() {
             checkLoginStatus();
-            loadChatUserVOList();
         }
 
         created();
@@ -211,11 +232,12 @@ export default defineComponent({
             loggedIn,
             // msgMap,
             chatUserVOList,
-            msg2dList,
+            privateChatMsg2dList,
             recall,
-            updateMsg2dList,
-            addToMsg2dList,
+            updatePrivateChatMsg2dList,
+            addToPrivateChatMsg2dList,
             logout,
+            addToBroadcastMsgList,
         };
     },
 });
@@ -241,7 +263,7 @@ export default defineComponent({
     }
 }
 
-.link{
+.link {
     margin: 0 20px;
 }
 
@@ -251,7 +273,7 @@ export default defineComponent({
     display: block;
 }
 
-p{
+p {
     margin: 0;
 }
 </style>
