@@ -39,6 +39,14 @@
         </el-main>
 
         <el-footer id="footer">Footer</el-footer>
+        <el-footer id="footer">
+            <el-button @click="getBroadcastMsgList">show</el-button>
+        </el-footer>
+        <el-dialog v-model="showBroadcastMsgList" title="广播消息"
+                   style="width: 540px;height:1160px;background-color: white">
+            <ChatMsgView :chatMsgList="broadcastMsgList" :chatMsgType="ChatMsgType.BroadcastChatMsg"></ChatMsgView>
+        </el-dialog>
+
     </el-container>
 
 </template>
@@ -59,8 +67,12 @@ import {PrivateChatRecallMsg} from "@/common/wsMsgs/PrivateChatRecallMsg";
 import {getCookie, setCookie} from "@/utils/cookies";
 import {ChatMsgVO} from "@/common/vos/ChatMsgVO";
 import {BroadcastChatMsg} from "@/common/wsMsgs/BroadcastChatMsg";
+import ChatMsgView from "@/components/ChatMsgViewComponent.vue";
 
 export default defineComponent({
+    components: {
+        ChatMsgView,
+    },
     setup: function (props, context) {
         let loggedIn = ref(false);
         let ws: WebSocket;
@@ -208,6 +220,28 @@ export default defineComponent({
 
         //广播消息
         let broadcastMsgList: Array<ChatMsgVO> = reactive([]);
+        let showBroadcastMsgList = ref(false);
+        let broadcastMsgListPageNum = 0;
+
+        function getBroadcastMsgList() {
+            showBroadcastMsgList.value = true;
+            if (broadcastMsgListPageNum === 0 && broadcastMsgList.length > 0) {
+                return;
+            }
+            TalkApis.getBroadcastMsgs(broadcastMsgListPageNum).then(res => {
+                if (res.data.code === 200) {
+                    let list = res.data.body as Array<ChatMsgVO>;
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多");
+                        return;
+                    }
+                    broadcastMsgList.push(...list);
+                    console.log(broadcastMsgList);
+                } else {
+                    ElMessage.error("查找失败：" + res.data.message);
+                }
+            });
+        }
 
         function addToBroadcastMsgList(vo: ChatMsgVO) {
             broadcastMsgList.push(vo);
@@ -238,6 +272,10 @@ export default defineComponent({
             addToPrivateChatMsg2dList,
             logout,
             addToBroadcastMsgList,
+            broadcastMsgList,
+            showBroadcastMsgList,
+            getBroadcastMsgList,
+            ChatMsgType,
         };
     },
 });
@@ -247,7 +285,12 @@ export default defineComponent({
 <style lang="scss">
 #app {
     text-align: center;
+}
 
+.clear::before, .clear::after {
+    content: '';
+    display: table;
+    clear: both;
 }
 
 #header {

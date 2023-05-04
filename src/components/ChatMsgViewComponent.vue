@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="chatBox">
         <div id="msgArea">
             <el-scrollbar ref="msgListScrollbarRef">
                 <div v-for="item in chatMsgList" :key="item.id">
@@ -19,7 +19,7 @@
         </div>
 
         <el-dialog
-            :title="'与'+chatUser+'的历史记录'"
+            :title="chatMsgType === ChatMsgType.PrivateChatMsg?'与'+chatUser+'的历史记录':'广播消息历史记录'"
             v-model="showHistoryMsgs"
             style="width: 560px"
             @close="closeDialog">
@@ -62,27 +62,55 @@ export default defineComponent({
         }
 
         function loadHistoryMsgs() {
+            // if (props.chatMsgType === ChatMsgType.PrivateChatMsg) {
+            //     TalkApis.getPrivateMsgsWith(props.chatUser, historyMsgsPageNum.value).then(res => {
+            //         if (res.data.code === 200) {
+            //             let list = res.data.body as Array<ChatMsgVO>;
+            //             if (list.length === 0) {
+            //                 ElMessage.error("暂无更多");
+            //                 return;
+            //             }
+            //             historyMsgs.reverse();
+            //             historyMsgs.push(...list);
+            //             historyMsgs.reverse();
+            //             console.log(historyMsgs);
+            //             historyMsgsPageNum.value++;
+            //         } else {
+            //             ElMessage.error("查找历史消息失败：" + res.data.message);
+            //         }
+            //     });
+            // } else if (props.chatMsgType === ChatMsgType.BroadcastChatMsg) {
+            //
+            // } else {
+            //     ElMessage.error("未知的ChatMsgType");
+            //     let p: Promise<any> = TalkApis.getPrivateMsgsWith(props.chatUser, historyMsgsPageNum.value);
+            //
+            // }
+            let promise: Promise<any>;
             if (props.chatMsgType === ChatMsgType.PrivateChatMsg) {
-                TalkApis.getPrivateMsgsWith(props.chatUser, historyMsgsPageNum.value).then(res => {
-                    if (res.data.code === 200) {
-                        let list = res.data.body as Array<ChatMsgVO>;
-                        if (list.length === 0) {
-                            ElMessage.error("暂无更多");
-                            return;
-                        }
-                        historyMsgs.reverse();
-                        historyMsgs.push(...list);
-                        historyMsgs.reverse();
-                        console.log(historyMsgs);
-                        historyMsgsPageNum.value++;
-                    } else {
-                        ElMessage.error("查找历史消息失败：" + res.data.message);
-                    }
-                });
+                promise = TalkApis.getPrivateMsgsWith(props.chatUser, historyMsgsPageNum.value);
+            } else if (props.chatMsgType === ChatMsgType.BroadcastChatMsg) {
+                promise = TalkApis.getBroadcastMsgs(historyMsgsPageNum.value);
             } else {
-                //todo
+                ElMessage.error("未知的ChatMsgType");
+                return;
             }
-
+            promise.then(res => {
+                if (res.data.code === 200) {
+                    let list = res.data.body as Array<ChatMsgVO>;
+                    if (list.length === 0) {
+                        ElMessage.error("暂无更多");
+                        return;
+                    }
+                    historyMsgs.reverse();
+                    historyMsgs.push(...list);
+                    historyMsgs.reverse();
+                    console.log(historyMsgs);
+                    historyMsgsPageNum.value++;
+                } else {
+                    ElMessage.error("查找历史消息失败：" + res.data.message);
+                }
+            });
         }
 
         function closeDialog() {
@@ -131,6 +159,10 @@ export default defineComponent({
                         // console.log(res.data);
                     }
                 });
+            } else if (props.chatMsgType === ChatMsgType.BroadcastChatMsg) {
+                //todo
+            } else {
+                ElMessage.error("未知的ChatMsgType");
             }
         }
 
@@ -143,12 +175,18 @@ export default defineComponent({
             sendMsg,
             msgContent,
             historyMsgs,
+            ChatMsgType,
         };
     },
 });
 </script>
 
 <style scoped>
+
+#chatBox {
+    position: relative;
+}
+
 #msgArea {
     position: absolute;
     top: 0;
