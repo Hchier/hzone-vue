@@ -13,10 +13,10 @@
             <el-input v-model="userLoginDto.password"/>
         </el-form-item>
         <el-form-item>
-            <el-button type="primary" @click="login">
+            <el-button class="button" type="primary" @click="login">
                 登录
             </el-button>
-            <el-button @click="resetForm">清空</el-button>
+            <el-button class="button" @click="resetForm">清空</el-button>
         </el-form-item>
     </el-form>
 
@@ -64,5 +64,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+.button{
+    width: 174px;
+}
 </style>

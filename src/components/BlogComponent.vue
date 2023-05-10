@@ -1,10 +1,9 @@
 <template>
     <div id="blog" class="clear">
-        <el-avatar
-            id="avatar"
-            :size="50"
-            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-        />
+        <el-avatar id="avatar" :size="50"
+                   :src="avatarPrefix + blogVO.publisher +'.png'" @error="true">
+            <img :src="avatarPrefix+Math.floor(Math.random()*10)+'.png'" :alt="blogVO.publisher">
+        </el-avatar>
 
         <span id="sender">{{ blogVO.publisher }}</span>
 
@@ -31,6 +30,13 @@
         <el-button id="openOrCloseCommentAreaButton" type="primary" @click="openOrCloseCommentArea">
             评论({{ blogVO.commentNum }})
         </el-button>
+        <el-button id="update" type="primary" v-show="blogVO.updatePermission">
+            <router-link :to="'/blogUpdate?id=' + blogVO.id" style="color: white; text-decoration: none">更新
+            </router-link>
+        </el-button>
+        <el-button id="delete" type="danger" v-show="blogVO.updatePermission" @click="blogDelete">
+            删除
+        </el-button>
 
 
         <div v-for="(item) in blogCommentVOList" v-bind:key="item.id" v-show="showCommentArea">
@@ -42,6 +48,8 @@
                 @setCommentRepliedDialogVisibleEmit="setCommentRepliedDialogVisible(item.id)"
                 @blogCommentRepliedPublishSuccessEmit="blogCommentRepliedPublishSuccess"></BlogComment>
         </div>
+
+
         <el-button type="primary" @click="loadMoreComments(-1,blogCommentVOList)" v-show="showCommentArea">更多评论
         </el-button>
 
@@ -55,10 +63,12 @@
                              @commentPublishSuccessEmit="blogCommentRepliedPublishSuccess">
                 </BlogComment>
             </div>
+
             <el-button type="primary"
                        @click="loadMoreComments(blogCommentRepliedVOList[0].id,blogCommentRepliedVOList)">更多评论
             </el-button>
         </el-dialog>
+
 
         <Reply id="replyComponent" :blogCommentPublishDTO="blogCommentPublishDTO" v-if="showCommentArea"
                @blogCommentPublishSuccessEmit="blogCommentPublishSuccess"></Reply>
@@ -79,6 +89,8 @@ import {useRoute} from "vue-router";
 import blogCommentApis from "@/common/apis/BlogCommentApis";
 import {Ref, UnwrapRef} from "@vue/reactivity";
 import {BlogCommentGetDTO, BlogCommentPublishDTO} from "@/common/dtos/BlogCommentDTOs";
+import {AVATAR_PREFIX} from "@/common/consts/const";
+import router from "@/router";
 
 export default defineComponent({
     props: ["blogVO", "autoUnfold"],
@@ -87,6 +99,7 @@ export default defineComponent({
         Reply,
     },
     setup(props) {
+        let avatarPrefix = AVATAR_PREFIX;
         let content: string = ref(props.blogVO.content.substring(0, 100));
         //内容是否折叠了
         let foldStatus = ref(true);
@@ -249,6 +262,17 @@ export default defineComponent({
             });
         }
 
+        function blogDelete() {
+            BlogApis.blogDelete(props.blogVO.id).then(res => {
+                if (res.data.code === 200) {
+                    ElMessage.success("删除成功");
+                    router.push("/");
+                } else {
+                    ElMessage.error("删除失败：" + res.data.message);
+                }
+            });
+        }
+
         onMounted((() => {
             if (props.autoUnfold) {
                 unfold();
@@ -256,6 +280,7 @@ export default defineComponent({
         }));
 
         return {
+            avatarPrefix,
             content,
             unfold,
             foldStatus,
@@ -275,6 +300,7 @@ export default defineComponent({
             blogCommentPublishSuccess,
             blogFavor,
             blogUnFavor,
+            blogDelete,
         };
     },
 });
@@ -314,6 +340,12 @@ export default defineComponent({
     margin: 20px auto;
     display: inline-block;
     font-size: 25px;
+    text-decoration: none;
+    color: black;
+}
+
+#title:hover {
+    color: #409eff;
 }
 
 #topic {
@@ -351,7 +383,17 @@ export default defineComponent({
 
 #openOrCloseCommentAreaButton {
     float: left;
-    margin: 40px 0px 10px -60px;
+    margin: 40px 0px 10px -67px;
+}
+
+#update {
+    float: left;
+    margin: 40px 0px 10px 10px;
+}
+
+#delete {
+    float: left;
+    margin: 40px 0px 10px 10px;
 }
 
 </style>

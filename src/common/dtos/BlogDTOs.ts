@@ -5,3 +5,9 @@ export type BlogUpdateDTO = {
     selfVisible: boolean,
     commentForbidden: boolean,
 }
+
+export type BlogPublishDTO = {
+    title: string,
+    content: string,
+    topic: string,
+}

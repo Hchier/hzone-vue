@@ -23,6 +23,10 @@
             </el-badge>
             |
             <el-badge class="link" :hidden="true">
+                <router-link to="/blogPublish">发表博客</router-link>
+            </el-badge>
+            |
+            <el-badge class="link" :hidden="true">
                 <router-link to="/login" @click="logout">登出</router-link>
             </el-badge>
         </el-header>
@@ -42,9 +46,14 @@
         <el-footer id="footer">
             <el-button @click="getBroadcastMsgList">show</el-button>
         </el-footer>
-        <el-dialog v-model="showBroadcastMsgList" title="广播消息"
-                   style="width: 540px;height:1160px;background-color: white">
-            <ChatMsgView :chatMsgList="broadcastMsgList" :chatMsgType="ChatMsgType.BroadcastChatMsg"></ChatMsgView>
+
+        <el-dialog v-model="showBroadcastMsgList" title=""
+                   style="width: 500px;height:710px;background-color: white">
+            <BroadcastChatFrameView
+                :chatMsgList="broadcastMsgList"
+                @addToBroadcastMsgList="addToBroadcastMsgList"
+                @recall="recall">
+            </BroadcastChatFrameView>
         </el-dialog>
 
     </el-container>
@@ -67,11 +76,12 @@ import {PrivateChatRecallMsg} from "@/common/wsMsgs/PrivateChatRecallMsg";
 import {getCookie, setCookie} from "@/utils/cookies";
 import {ChatMsgVO} from "@/common/vos/ChatMsgVO";
 import {BroadcastChatMsg} from "@/common/wsMsgs/BroadcastChatMsg";
-import ChatMsgView from "@/components/ChatMsgViewComponent.vue";
+import BroadcastChatFrameView from "@/views/BroadcastChatFrameView.vue";
+import {BroadcastChatRecallMsg} from "@/common/wsMsgs/BroadcastChatRecallMsg";
 
 export default defineComponent({
     components: {
-        ChatMsgView,
+        BroadcastChatFrameView,
     },
     setup: function (props, context) {
         let loggedIn = ref(false);
@@ -93,7 +103,6 @@ export default defineComponent({
                 loggedIn.value = true;
             };
             ws.onmessage = function (this: WebSocket, ev: MessageEvent<string>) {
-                console.log(ev.data);
                 switch (Number(ev.data[8])) {
                     case WsMsgType.NoticeNumIncr:
                         //todo
@@ -127,11 +136,12 @@ export default defineComponent({
                         let privateChatRecallMsgDTO = JSON.parse(ev.data) as WsMsgDTO<PrivateChatRecallMsg>;
                         chatUserVOList.forEach((value, index) => {
                             if (value.sender === privateChatRecallMsgDTO.body.sender) {
-                                privateChatMsg2dList[index].forEach((value, i) => {
-                                    if (value.id === privateChatRecallMsgDTO.body.id) {
+                                for (let i = 0; i < privateChatMsg2dList[index].length; i++) {
+                                    if (privateChatMsg2dList[index][i].id === privateChatRecallMsgDTO.body.id) {
                                         privateChatMsg2dList[index].splice(i, 1);
+                                        break;
                                     }
-                                });
+                                }
                             }
                         });
                         break;
@@ -145,7 +155,20 @@ export default defineComponent({
                             createTime: broadcastChatMsgDTO.body.createTime,
                             fromCurrentUser: false,
                         };
+                        console.log("BroadcastChatMsg");
                         broadcastMsgList.push(broadcastChatMsgVO);
+                        break;
+                    case WsMsgType.BroadcastChatRecallMsg:
+                        let broadcastChatRecallMsgDTO = JSON.parse(ev.data) as WsMsgDTO<BroadcastChatRecallMsg>;
+                        console.log(broadcastChatRecallMsgDTO);
+                        console.log(broadcastMsgList);
+                        for (let i = 0; i < broadcastMsgList.length; i++) {
+                            if (broadcastMsgList[i].id === broadcastChatRecallMsgDTO.body.id) {
+                                console.log("移除" + broadcastMsgList[i]);
+                                broadcastMsgList.splice(i, 1);
+                                break;
+                            }
+                        }
                         break;
                     default:
                         console.log("未知的WsMsgType：" + Number(ev.data[8]));
@@ -182,6 +205,7 @@ export default defineComponent({
 
         //可能撤回私信或广播消息
         function recall(chatMsgType: number, receiver: string, id: number) {
+            console.log(chatMsgType, id);
             //撤回私信
             if (chatMsgType === ChatMsgType.PrivateChatMsg) {
                 let index = -1;
@@ -205,6 +229,7 @@ export default defineComponent({
                 broadcastMsgList.forEach((value, index) => {
                     if (value.id === id) {
                         broadcastMsgList.splice(index, 1);
+                        return;
                     }
                 });
             }
@@ -235,8 +260,8 @@ export default defineComponent({
                         ElMessage.error("暂无更多");
                         return;
                     }
+                    list.reverse();
                     broadcastMsgList.push(...list);
-                    console.log(broadcastMsgList);
                 } else {
                     ElMessage.error("查找失败：" + res.data.message);
                 }
@@ -253,6 +278,7 @@ export default defineComponent({
             ws.close();
             chatUserVOList.splice(0);
             privateChatMsg2dList.splice(0);
+            broadcastMsgList.splice(0);
         }
 
         function created() {

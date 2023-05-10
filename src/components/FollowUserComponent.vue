@@ -1,6 +1,9 @@
 <template>
     <div id="follow" class="clear">
-        <el-avatar id="avatar" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" :size="45"/>
+        <el-avatar id="avatar" :size="45"
+                   :src="avatarPrefix + showFollower?followUserVO.follower:followUserVO.followee +'.png'" @error="true">
+            <img :src="avatarPrefix+Math.floor(Math.random()*10)+'.png'" alt=""/>
+        </el-avatar>
 
         <a id="username" v-show="!showFollower">{{ followUserVO.followee }}</a>
         <a id="username" v-show="showFollower">{{ followUserVO.follower }}</a>
@@ -18,11 +21,13 @@ import {FollowType} from "@/common/consts/Enums";
 import {FollowDTO, FollowCancelDTO} from "@/common/dtos/FollowDTOs";
 import FollowApis from "@/common/apis/FollowApis";
 import {ElMessage} from "element-plus";
+import {AVATAR_PREFIX} from "@/common/consts/const";
 
 export default defineComponent({
     name: "FollowComponent",
     props: ["followUserVO", "showFollower"],
     setup(props) {
+        let avatarPrefix = AVATAR_PREFIX;
         function follow() {
             let followDTO: FollowDTO = {
                 type: FollowType.User,
@@ -62,6 +67,7 @@ export default defineComponent({
             FollowType,
             follow,
             followCancel,
+            avatarPrefix
         };
     },
 });

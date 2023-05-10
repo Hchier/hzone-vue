@@ -1,6 +1,9 @@
 <template>
     <div id="BlogComment" class="clear" v-show="visible">
-        <el-avatar id="avatar" :size="50" :src="vo.sender"/>
+        <el-avatar id="avatar" :size="50"
+                   :src="avatarPrefix + vo.sender +'.png'" @error="true">
+            <img :src="avatarPrefix+Math.floor(Math.random()*10)+'.png'" :alt="vo.sender">
+        </el-avatar>
         <span id="sender">
             <span>{{ vo.sender }}</span>
         </span>
@@ -33,6 +36,7 @@ import {ElMessage} from "element-plus";
 import {defineComponent, reactive, ref} from "vue";
 import {WallVO} from "@/common/vos/WallVO";
 import WallApis from "@/common/apis/WallApis";
+import {AVATAR_PREFIX} from "@/common/consts/const";
 
 export default defineComponent({
     name: "WallMsgComponent",
@@ -41,6 +45,7 @@ export default defineComponent({
         //被删除后设为false
         let visible = ref(true);
         let vo: WallVO = reactive(props.wallVO);
+        let avatarPrefix = AVATAR_PREFIX;
 
         function deleteMsg() {
             WallApis.delete(vo.id).then(res => {
@@ -67,6 +72,7 @@ export default defineComponent({
         }
 
         return {
+            avatarPrefix,
             visible,
             vo,
             deleteMsg,

@@ -2,7 +2,10 @@
     <div id="zone" class="clear">
         <div id="userInfo">
             <el-avatar id="avatar" :size="90"
-                       src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
+                       :src="avatarPrefix + userVO.username+'.png'" @error="true">
+                <img :src="avatarPrefix+Math.floor(Math.random()*10)+'.png'" :alt="userVO.username">
+            </el-avatar>
+
             <p id="username"><strong>{{ userVO.username }}</strong></p>
             <p id="signature">{{ userVO.signature }}</p>
             <div id="numDiv">
@@ -27,7 +30,7 @@
             <div class="contentButton" tabindex="1" @click="getPublishedList">发布列表</div>
             <div class="contentButton" tabindex="1" @click="getFavorList">点赞列表</div>
             <div class="contentButton" tabindex="1" @click="getFollowUserList">关注用户</div>
-            <div class="contentButton" tabindex="1" @click="getFollowTopicList">关注列表</div>
+            <div class="contentButton" tabindex="1" @click="getFollowTopicList">关注话题</div>
             <div class="contentButton" tabindex="1" @click="getFansList">粉丝列表</div>
             <div class="contentButton" tabindex="1" @click="showWall">留言墙</div>
 
@@ -89,6 +92,7 @@ import FollowTopic from "@/components/FollowTopicComponent.vue";
 import {FollowUserVO} from "@/common/vos/FollowUserVO";
 import {FollowTopicVO} from "@/common/vos/FollowTopicVO";
 import Wall from "@/components/WallComponent.vue";
+import {AVATAR_PREFIX} from "@/common/consts/const";
 
 
 export default defineComponent({
@@ -111,6 +115,7 @@ export default defineComponent({
             followed: false,
             isOnline: false,
         });
+        let avatarPrefix = AVATAR_PREFIX;
 
         function getUserVO() {
             let username = useRoute().query.username as string | undefined;
@@ -330,6 +335,7 @@ export default defineComponent({
             getFansList,
             loadMoreFansList,
             showWall,
+            avatarPrefix,
         };
     },
 });
@@ -392,7 +398,7 @@ export default defineComponent({
     padding: 0 40px 0 0;
 }
 
-#isOnline{
+#isOnline {
     position: absolute;
     left: 310px;
     top: 45px;

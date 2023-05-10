@@ -35,7 +35,7 @@ const routes: Array<RouteRecordRaw> = [
         path: "/privateChat",
         name: "privateChat",
         component: () =>
-            import(/* webpackChunkName: "about" */ "../views/ChatFrameView.vue"),
+            import(/* webpackChunkName: "about" */ "../views/PrivateChatFrameView.vue"),
     },
     {
         path: "/blogUpdate",
@@ -44,10 +44,16 @@ const routes: Array<RouteRecordRaw> = [
             import(/* webpackChunkName: "about" */ "../views/BlogUpdateView.vue"),
     },
     {
-        path: "/h",
-        name: "h",
+        path: "/topic",
+        name: "topic",
         component: () =>
             import(/* webpackChunkName: "about" */ "../views/TopicView.vue"),
+    },
+    {
+        path: "/blogPublish",
+        name: "blogPublish",
+        component: () =>
+            import(/* webpackChunkName: "about" */ "../views/BlogPublishView.vue"),
     },
 ];
 

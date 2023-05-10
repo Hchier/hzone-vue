@@ -8,9 +8,10 @@ export enum WsMsgType {
     PrivateChatMsg = 2,
     PrivateChatRecallMsg = 3,
     BroadcastChatMsg = 4,
+    BroadcastChatRecallMsg = 5,
 }
 
-export enum ChatMsgType{
-    PrivateChatMsg=1,
-    BroadcastChatMsg=2,
+export enum ChatMsgType {
+    PrivateChatMsg = 1,
+    BroadcastChatMsg = 2,
 }

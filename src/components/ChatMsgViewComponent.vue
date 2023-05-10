@@ -3,7 +3,7 @@
         <div id="msgArea">
             <el-scrollbar ref="msgListScrollbarRef">
                 <div v-for="item in chatMsgList" :key="item.id">
-                    <SingleMsg :vo="item" @recallEmit="recall"></SingleMsg>
+                    <SingleMsg :vo="item" :msgType="msgType" @recallEmit="recall"></SingleMsg>
                 </div>
                 <el-button type="primary" @click="openDialog(); loadHistoryMsgs()">
                     查找更多聊天记录
@@ -14,6 +14,7 @@
         <div id="inputArea">
             <HyperTextInputBox
                 v-model:content="msgContent"
+                :height="'150px'"
                 @submitEmit="sendMsg">
             </HyperTextInputBox>
         </div>
@@ -26,20 +27,20 @@
 
             <el-button type="primary" @click="loadHistoryMsgs()">查找更多</el-button>
             <div v-for="item in historyMsgs" :key="item.id">
-                <SingleMsg :vo="item" @recallEmit="recall" style="margin: auto"></SingleMsg>
+                <SingleMsg :vo="item" :msgType="msgType" @recallEmit="recall" style="margin: auto"></SingleMsg>
             </div>
         </el-dialog>
     </div>
 </template>
 
 <script lang=ts>
-import {defineComponent, reactive, ref} from "vue";
+import {defineComponent, onBeforeUnmount, reactive, ref, watch} from "vue";
 import SingleMsg from "@/components/SingleMsgComponent.vue";
 import HyperTextInputBox from "@/components/HyperTextInputBoxComponent.vue";
 import {ChatMsgVO} from "@/common/vos/ChatMsgVO";
 import TalkApis from "@/common/apis/TalkApis";
-import {ElMessage} from "element-plus";
-import {PrivateChatAddDTO, PrivateChatAddSuccessDTO} from "@/common/dtos/TalkDTOs";
+import {ElMessage, ElScrollbar} from "element-plus";
+import {BroadcastMsgAddSuccessDTO, PrivateChatAddDTO, PrivateChatAddSuccessDTO} from "@/common/dtos/TalkDTOs";
 import {ChatMsgType} from "@/common/consts/Enums";
 
 export default defineComponent({
@@ -48,7 +49,7 @@ export default defineComponent({
         SingleMsg,
         HyperTextInputBox,
     },
-    props: ["chatMsgType", "chatMsgList", "chatUser"],
+    props: ["msgType", "chatMsgList", "chatUser"],
     emits: ["newMsg", "recall"],
     setup: function (props, context) {
         // 是否展示 查看更多聊天记录的框
@@ -56,6 +57,7 @@ export default defineComponent({
         // 历史聊天记录
         let historyMsgs: Array<ChatMsgVO> = reactive([]);
         let historyMsgsPageNum = ref(0);
+        let msgListScrollbarRef = ref<InstanceType<typeof ElScrollbar>>();
 
         function openDialog() {
             showHistoryMsgs.value = true;
@@ -87,9 +89,9 @@ export default defineComponent({
             //
             // }
             let promise: Promise<any>;
-            if (props.chatMsgType === ChatMsgType.PrivateChatMsg) {
+            if (props.msgType === ChatMsgType.PrivateChatMsg) {
                 promise = TalkApis.getPrivateMsgsWith(props.chatUser, historyMsgsPageNum.value);
-            } else if (props.chatMsgType === ChatMsgType.BroadcastChatMsg) {
+            } else if (props.msgType === ChatMsgType.BroadcastChatMsg) {
                 promise = TalkApis.getBroadcastMsgs(historyMsgsPageNum.value);
             } else {
                 ElMessage.error("未知的ChatMsgType");
@@ -139,7 +141,7 @@ export default defineComponent({
         }
 
         async function sendMsg() {
-            if (props.chatMsgType === ChatMsgType.PrivateChatMsg) {
+            if (props.msgType === ChatMsgType.PrivateChatMsg) {
                 let dto: PrivateChatAddDTO = {
                     to: props.chatUser,
                     content: msgContent.value,
@@ -147,7 +149,7 @@ export default defineComponent({
                 while (props.chatUser === "") {
                     await sleep(100);
                 }
-                TalkApis.sendMsg(dto).then(res => {
+                TalkApis.sendPrivateMsg(dto).then(res => {
                     if (res.data.code === 200) {
                         ElMessage.success("发送成功");
                         let chatMsgVO: ChatMsgVO = res.data.body as ChatMsgVO;
@@ -159,12 +161,46 @@ export default defineComponent({
                         // console.log(res.data);
                     }
                 });
-            } else if (props.chatMsgType === ChatMsgType.BroadcastChatMsg) {
-                //todo
+            } else if (props.msgType === ChatMsgType.BroadcastChatMsg) {
+                TalkApis.sendBroadcastMsg(msgContent.value).then(res => {
+                    if (res.data.code === 200) {
+                        ElMessage.success("发送成功");
+                        let dto: BroadcastMsgAddSuccessDTO = res.data.body as BroadcastMsgAddSuccessDTO;
+                        let chatMsgVO: ChatMsgVO = {
+                            id: dto.id,
+                            from: dto.from,
+                            to: "",
+                            content: dto.content,
+                            createTime: dto.createTime,
+                            fromCurrentUser: true,
+                        };
+                        context.emit("newMsg", chatMsgVO);
+                        msgContent.value = "";
+                    } else {
+                        ElMessage.error("发送失败：" + res.data.message);
+                    }
+                });
             } else {
                 ElMessage.error("未知的ChatMsgType");
             }
         }
+
+        //监听
+        watch(props.chatMsgList, (newVal, oldValue) => {
+            scrollToBottom();
+        });
+
+        //滚到最底部。到顶部的高度应该计算出来，但是我不会
+        function scrollToBottom() {
+            return setTimeout(function () {
+                msgListScrollbarRef.value?.setScrollTop(1000000);
+            }, 50); // 定时时间
+
+        }
+
+        onBeforeUnmount(() => {
+            clearTimeout(scrollToBottom());
+        });
 
         return {
             showHistoryMsgs,
@@ -176,6 +212,7 @@ export default defineComponent({
             msgContent,
             historyMsgs,
             ChatMsgType,
+            msgListScrollbarRef,
         };
     },
 });

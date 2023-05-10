@@ -55,7 +55,7 @@ export default defineComponent({
     left: 130px;
     top: 10px;
     font-size: 30px;
-    color: #eb7340;
+    color: #fc5431;
 }
 
 #followed {

@@ -12,7 +12,7 @@
         <ChatMsgView
             id="msgArea"
             v-if="showMsgArea"
-            :chatMsgType="ChatMsgType.PrivateChatMsg"
+            :msgType="ChatMsgType.PrivateChatMsg"
             :chatMsgList="chatMsgList"
             :chatUser="chatUser"
             @newMsg="addToPrivateChatMsg2dList"
@@ -104,11 +104,12 @@ export default defineComponent({
         }
 
         function recall(receiver: string, id: number) {
-            chatMsgList.forEach((value, index) => {
-                if (value.id === id) {
-                    chatMsgList.splice(index, 1);
+            for (let i = 0; i < chatMsgList.length; i++) {
+                if (chatMsgList[i].id === id) {
+                    chatMsgList.splice(i, 1);
+                    return;
                 }
-            });
+            }
             context.emit("recall", ChatMsgType.PrivateChatMsg, receiver, id);
         }
 

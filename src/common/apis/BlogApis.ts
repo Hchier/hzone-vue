@@ -1,5 +1,5 @@
 import {post, postWithoutJson} from "@/utils/request";
-import {BlogUpdateDTO} from "@/common/dtos/BlogDTOs";
+import {BlogPublishDTO, BlogUpdateDTO} from "@/common/dtos/BlogDTOs";
 
 export default {
     getBlog: (id: number) => post("/blog/get/" + id),
@@ -10,4 +10,6 @@ export default {
     blogUnFavor: (blogId: number, author: string) => post("/blog/unFavor/" + blogId + "/" + author),
     blogUpdate: (dto: BlogUpdateDTO) => postWithoutJson("/blog/update", dto),
     getListByTopic: (name: string, pageNum: number) => post("/blog/listByTopic/" + name + "/" + pageNum),
+    blogPublish: (dto: BlogPublishDTO) => postWithoutJson("/blog/publish", dto),
+    blogDelete: (id: number) => post("/blog/delete/" + id),
 };

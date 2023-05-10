@@ -1,0 +1,1 @@
+export const AVATAR_PREFIX = "http://localhost:7010/hzone/avatar/";

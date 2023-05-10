@@ -16,3 +16,14 @@ export type PrivateMsgRecallDTO = {
     sender: string,
     receiver: string,
 }
+
+export type BroadcastMsgAddDTO = {
+    content: string,
+}
+
+export type BroadcastMsgAddSuccessDTO = {
+    id: number,
+    from: string,
+    content: string,
+    createTime: string,
+}

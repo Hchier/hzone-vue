@@ -7,7 +7,7 @@
             v-model="visible"
             style="margin-right: 100px"
         />
-        <!--        <br>-->
+
         <el-switch
             active-text="允许评论"
             inactive-text="禁止评论"
@@ -16,6 +16,7 @@
         <HyperTextInputBox
             id="HyperTextInputBox"
             v-model:content="dto.content"
+            :height="'500px'"
             @submitEmit="submit"
             v-if="showInputBox">
         </HyperTextInputBox>
@@ -34,7 +35,7 @@ import {ElMessage} from "element-plus";
 import router from "@/router";
 
 export default defineComponent({
-    name: "BlogPublishView",
+    name: "BlogUpdateView",
     components: {
         HyperTextInputBox,
     },
@@ -64,7 +65,7 @@ export default defineComponent({
         }
 
         function created() {
-            let blogIdStr = useRoute().query.blogId as string | undefined;
+            let blogIdStr = useRoute().query.id as string | undefined;
             if (blogIdStr === undefined || blogIdStr === "") {
                 ElMessage.error("缺少参数blogId");
                 return;

@@ -1,6 +1,9 @@
 <template>
     <div id="follow" class="clear">
-        <a id="followee" href="">{{ followTopicVO.followee }}</a>
+        <!--        <a id="followee" href="">{{ followTopicVO.followee }}</a>-->
+        <router-link id="followee" :to="'/topic?name=' + followTopicVO.followee">
+            {{ followTopicVO.followee }}
+        </router-link>
 
         <p id="totalReadNum">总阅读量: {{ followTopicVO.totalReadNum }}</p>
 
@@ -81,6 +84,7 @@ export default defineComponent({
     margin-left: 15px;
     line-height: 50px;
     font-size: 23px;
+    color: #fc5431;
 }
 
 #totalReadNum {

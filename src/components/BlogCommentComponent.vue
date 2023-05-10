@@ -1,12 +1,17 @@
 <template>
     <div id="BlogComment" class="clear" v-show="visible">
-        <el-avatar id="avatar" :size="50" :src="blogCommentVO.publisher"/>
+        <el-avatar id="avatar" :size="50"
+                   :src="avatarPrefix + blogCommentVO.publisher +'.png'" @error="true">
+            <img :src="avatarPrefix+Math.floor(Math.random()*10)+'.png'" :alt="blogCommentVO.publisher">
+        </el-avatar>
+
         <span id="sender">
             <span>{{ blogCommentVO.publisher }}</span>
             <span
                 v-show="blogCommentVO.baseComment !== -1"> 回复 {{ blogCommentVO.receiver }}</span>
         </span>
-        <span id="content" v-html="blogCommentVO.content"></span>
+        <span id="content" v-html="blogCommentVO.content"
+              :style="{color: blogCommentVO.hidden === true?'#8590a6':'black'}"></span>
         <p id="createTime">发布于 {{ blogCommentVO.createTime }}</p>
 
         <el-popover placement="right" trigger="hover">
@@ -50,6 +55,7 @@ import {BlogCommentDeleteDTO, BlogCommentPublishDTO} from "@/common/dtos/BlogCom
 import ReplyComponent from "@/components/ReplyComponent.vue";
 import blogCommentApis from "@/common/apis/BlogCommentApis";
 import {BlogCommentVO} from "@/common/vos/BlogCommentVO";
+import {AVATAR_PREFIX} from "@/common/consts/const";
 
 export default defineComponent({
     name: "BlogComment",
@@ -59,6 +65,7 @@ export default defineComponent({
     props: ["blogCommentVO", "hiddenPermission", "moreRepliesButtonVisible"],
     emits: ["setCommentRepliedDialogVisibleEmit", "commentPublishSuccessEmit"],
     setup(props, context) {
+        let avatarPrefix = AVATAR_PREFIX;
         //被删除后设为false
         let visible = ref(true);
         let vo: BlogCommentVO = reactive(props.blogCommentVO);
@@ -100,6 +107,7 @@ export default defineComponent({
                     ElMessage.success("隐藏成功");
                     Object.assign(props.blogCommentVO, {
                         content: "该评论已被隐藏",
+                        hidden: true,
                     });
                 } else {
                     ElMessage.error("隐藏失败: " + res.data.body);
@@ -140,6 +148,7 @@ export default defineComponent({
         };
 
         return {
+            avatarPrefix,
             deleteComment,
             setCommentRepliedDialogVisible,
             visible,

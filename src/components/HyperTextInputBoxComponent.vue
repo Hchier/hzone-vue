@@ -8,7 +8,7 @@
                 :mode="mode"
             />
             <Editor
-                style="height: 500px; overflow-y: hidden;"
+                :style="{'height': height}"
                 v-model="valueHtml"
                 :defaultConfig="editorConfig"
                 :mode="mode"
@@ -36,7 +36,7 @@ import UserApis from "@/common/apis/UserApis";
 export default defineComponent({
     name: "HyperTextInputBoxComponent",
     components: {Editor, Toolbar},
-    props: ["content"],
+    props: ["content", "height"],
     emits: ["update:content", "submitEmit"],
     setup: function (props, context) {
         // 编辑器实例，必须用 shallowRef
@@ -100,8 +100,9 @@ export default defineComponent({
             onInsertedImage(imageNode: any | null) {
                 if (imageNode == null) return;
                 const {src, alt, url, href} = imageNode;
-                picListInserted.push(src);
-                console.log(src);
+                let src_str = src as string;
+                src_str = src_str.substring(src_str.lastIndexOf("/") + 1);
+                picListInserted.push(src_str);
             },
 
             parseImageSrc: customParseImageSrc,
@@ -174,11 +175,9 @@ export default defineComponent({
             let list: any[] = editor.getElemsByType(type);
             let res: string[] = [];
             list.forEach(value => {
-                if (type === "image") {
-                    res.push(value.href);
-                } else {
-                    res.push(value.src);
-                }
+                let src_str = value.src as string;
+                src_str = src_str.substring(src_str.lastIndexOf("/") + 1);
+                res.push(src_str);
             });
             return res;
         }
@@ -188,18 +187,23 @@ export default defineComponent({
             for (const item of getList(type)) {
                 setExist.add(item);
             }
-            let listDeleted: string[] = [];
+            console.log("setExist: ", setExist);
+            console.log("listInserted: ", listInserted);
+            console.log("listExistedFromTheBeginning: ", listExistedFromTheBeginning);
+            let listToDelete: string[] = [];
             listInserted.forEach(value => {
                 if (!setExist.has(value)) {
-                    listDeleted.push(value);
+                    listToDelete.push(value);
+
                 }
             });
             listExistedFromTheBeginning.forEach(value => {
                 if (!setExist.has(value)) {
-                    listDeleted.push(value);
+                    listToDelete.push(value);
                 }
             });
-            return listDeleted;
+            console.log("listToDelete: ", listToDelete);
+            return listToDelete;
         }
 
 
