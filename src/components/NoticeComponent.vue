@@ -1,40 +1,40 @@
 <template>
     <div id="notice" v-show="componentVisible">
-        <span v-if="noticeVO.type === 1">
+        <span class="content" v-if="noticeVO.type === 1">
             您关注的用户
-            <a v-bind:href="'/zone/?username='+noticeVO.sender">{{ noticeVO.sender }}</a>
+            <router-link class="link" :to="'/zone/?username='+noticeVO.sender">{{ noticeVO.sender }}</router-link>
             发表了新的博客
-            <a v-bind:href="'/blog/'+href">{{ noticeVO.content }}</a>
+            <router-link class="link" :to="'/blog/'+href">{{ noticeVO.content }}</router-link>
         </span>
 
-        <span v-else-if="noticeVO.type === 2">
+        <span class="content" v-else-if="noticeVO.type === 2">
                 您关注的话题
-            <a href="">{{ noticeVO.sender }}</a>
+            <router-link class="link" to="">{{ noticeVO.sender }}</router-link>
             有了新内容
-             <a v-bind:href="'/blog/'+href">{{ noticeVO.content }}</a>
+             <router-link class="link" :to="'/blog/'+href">{{ noticeVO.content }}</router-link>
         </span>
 
-        <span v-else-if="noticeVO.type === 3">
+        <span class="content" v-else-if="noticeVO.type === 3">
             您的
-            <a v-bind:href="'/blog/'+href">博客</a>
+            <router-link class="link" :to="'/blog/'+href">博客</router-link>
             有了新的回复：{{ noticeVO.content }}
         </span>
 
-        <span v-else-if="noticeVO.type === 4">
+        <span class="content" v-else-if="noticeVO.type === 4">
             您在
-            <a v-bind:href="'/blog/'+href">博客</a>
+            <router-link class="link" :to="'/blog/'+href">博客</router-link>
             下的评论被回复了：{{ noticeVO.content }}
         </span>
 
-        <span v-else-if="noticeVO.type === 5">
-            您的空间新增了留言：{{ noticeVO.content }}
+        <span class="content" v-else-if="noticeVO.type === 5">
+            您的
+            <router-link class="link" to="/zone">空间</router-link>
+            新增了留言：{{ noticeVO.content }}
         </span>
 
-        <span v-else>
+        <span class="content" v-else></span>
 
-        </span>
-
-        <el-button type="danger" @click="deleteNotice">删除</el-button>
+        <el-button id="deleteButton" type="danger" @click="deleteNotice">删除</el-button>
     </div>
 </template>
 
@@ -79,5 +79,21 @@ export default defineComponent({
     background-color: white;
     margin: auto;
     padding: 10px;
+    text-align: left;
+}
+
+.content {
+    width: 420px;
+    margin: 0 20px 0 0;
+    display: inline-block;
+}
+
+.link {
+    color: #409eff;
+    margin: 0;
+}
+
+#deleteButton {
+    vertical-align: top;
 }
 </style>

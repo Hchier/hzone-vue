@@ -4,7 +4,9 @@
         <div class="rankingTag" tabindex="1" @click="getHotTopicList('week')">周榜</div>
         <div class="rankingTag" tabindex="1" @click="getHotTopicList('day')">日榜</div>
         <div v-for="(item, index) in hotTopicList" v-bind:key="item">
-            <SingleHotTopic :rank="index" :name="item.name" :readNum="item.readNum"></SingleHotTopic>
+            <a :href="'/topic?name=' + item.name" style="color: black; text-decoration: none">
+                <SingleHotTopic :rank="index" :name="item.name" :readNum="item.readNum"></SingleHotTopic>
+            </a>
         </div>
     </div>
 </template>

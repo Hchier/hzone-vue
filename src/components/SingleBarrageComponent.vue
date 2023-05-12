@@ -1,12 +1,6 @@
 <template>
     <div id="SingleBarrage" class="clear">
-        <!--        <el-avatar id="avatar" :size="5"-->
-        <!--                   :src="avatarPrefix + username +'.png'" @error="true">-->
-        <!--            <img :src="avatarPrefix+Math.floor(Math.random()*10)+'.png'" :alt="username">-->
-        <!--        </el-avatar>-->
-
         <img id="avatar" :src="avatarPrefix + username +'.png'" alt="" style="border-radius:50%; overflow:hidden;">
-
         <span id="content" :style="{color: randomColor()}">{{ content }}</span>
     </div>
 </template>

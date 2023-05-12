@@ -42,9 +42,11 @@
             />
         </el-main>
 
-        <el-footer id="footer">Footer</el-footer>
         <el-footer id="footer">
-            <el-button @click="getBroadcastMsgList">show</el-button>
+            <el-badge class="link" :value="200" :max="99">
+                <ChatSvg @click="getBroadcastMsgList"
+                         style="width: 50px; height: 50px; color: #409eff;cursor: pointer"></ChatSvg>
+            </el-badge>
         </el-footer>
 
         <el-dialog v-model="showBroadcastMsgList" title=""
@@ -78,10 +80,12 @@ import {ChatMsgVO} from "@/common/vos/ChatMsgVO";
 import {BroadcastChatMsg} from "@/common/wsMsgs/BroadcastChatMsg";
 import BroadcastChatFrameView from "@/views/BroadcastChatFrameView.vue";
 import {BroadcastChatRecallMsg} from "@/common/wsMsgs/BroadcastChatRecallMsg";
+import ChatSvg from "@/components/ChatSvgComponent.vue";
 
 export default defineComponent({
     components: {
         BroadcastChatFrameView,
+        ChatSvg,
     },
     setup: function (props, context) {
         let loggedIn = ref(false);
@@ -218,20 +222,21 @@ export default defineComponent({
                 if (index === -1) {
                     return;
                 }
-                privateChatMsg2dList[index].forEach((value, i) => {
-                    if (value.id === id) {
+                for (let i = 0; i < privateChatMsg2dList[index].length; i++) {
+                    if (privateChatMsg2dList[index][i].id === id) {
                         privateChatMsg2dList[index].splice(i, 1);
+                        break;
                     }
-                });
+                }
             }
             //撤回广播消息
             else {
-                broadcastMsgList.forEach((value, index) => {
-                    if (value.id === id) {
-                        broadcastMsgList.splice(index, 1);
-                        return;
+                for (let i = 0; i < broadcastMsgList.length; i++) {
+                    if (broadcastMsgList[i].id === id) {
+                        broadcastMsgList.splice(i, 1);
+                        break;
                     }
-                });
+                }
             }
         }
 
@@ -327,7 +332,7 @@ export default defineComponent({
         color: #2c3e50;
 
         &.router-link-exact-active {
-            color: #42b983;
+            color: #409eff;
         }
     }
 }
@@ -338,7 +343,8 @@ export default defineComponent({
 
 #footer {
     position: fixed;
-    bottom: 0;
+    bottom: 645px;
+    right: 275px;
     display: block;
 }
 

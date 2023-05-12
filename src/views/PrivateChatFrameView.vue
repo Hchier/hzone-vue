@@ -107,7 +107,7 @@ export default defineComponent({
             for (let i = 0; i < chatMsgList.length; i++) {
                 if (chatMsgList[i].id === id) {
                     chatMsgList.splice(i, 1);
-                    return;
+                    break;
                 }
             }
             context.emit("recall", ChatMsgType.PrivateChatMsg, receiver, id);

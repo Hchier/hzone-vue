@@ -65,7 +65,7 @@ export default defineComponent({
     text-overflow: ellipsis;
 }
 
-#fire{
+#fire {
     float: right;
     margin-right: 10px;
 }

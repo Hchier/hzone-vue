@@ -7,7 +7,7 @@
         <span id="sender">
             <span>{{ vo.sender }}</span>
         </span>
-        <span id="content">{{ vo.content }}</span>
+        <span id="content" v-html="vo.content"></span>
         <p id="createTime">发布于 {{ vo.createTime }}</p>
 
         <el-popover placement="right" trigger="hover">
@@ -63,7 +63,7 @@ export default defineComponent({
                 if (res.data.code === 200) {
                     ElMessage.success("隐藏成功");
                     Object.assign(props.wallVO, {
-                        content: "该评论已被隐藏",
+                        content: "<span style='color: #8590a6'>该评论已被隐藏</span>",
                     });
                 } else {
                     ElMessage.error("隐藏失败：" + res.data.message);

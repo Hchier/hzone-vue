@@ -1,11 +1,5 @@
 <template>
     <div id="singleMsg" class="clear">
-<!--        <el-avatar-->
-<!--            id="avatar"-->
-<!--            -->
-<!--            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"-->
-<!--        />-->
-
         <el-avatar
             id="avatar"
             :style="{'float':  vo.fromCurrentUser?'right':'left', 'margin':vo.fromCurrentUser?'0 0 0 5px':'0 5px 0 0'}"
