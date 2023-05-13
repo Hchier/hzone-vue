@@ -1,8 +1,12 @@
 <template>
 
     <el-container style="background-color: #f6f6f6; min-height: 1000px">
-        <el-header id="header">
-            <router-link to="/login" v-show="!loggedIn">登录</router-link>
+        <el-header id="header" v-show="!loggedIn">
+            <router-link to="/login">登录</router-link>
+            |
+            <router-link to="/register">注册</router-link>
+            |
+            <router-link to="/reset">重置密码</router-link>
         </el-header>
 
         <el-header id="header" v-show="loggedIn">

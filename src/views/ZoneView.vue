@@ -16,7 +16,7 @@
             </div>
 
             <div id="isOnline">
-                <span v-if="userVO.isOnline" style="color: #429e83">在线</span>
+                <span v-if="userVO.isOnline" style="color: #409eff">在线</span>
                 <span v-else style="color: red">离线</span>
             </div>
 
@@ -400,14 +400,14 @@ export default defineComponent({
 
 #isOnline {
     position: absolute;
-    left: 310px;
-    top: 45px;
+    left: 250px;
+    top: 8px;
 }
 
 #followed {
     position: absolute;
-    left: 360px;
-    top: 40px;
+    left: 465px;
+    top: 45px;
 }
 
 #content {

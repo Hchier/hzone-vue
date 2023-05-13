@@ -10,7 +10,7 @@
             <el-input v-model="userLoginDto.username"/>
         </el-form-item>
         <el-form-item label="password: ">
-            <el-input v-model="userLoginDto.password"/>
+            <el-input show-password v-model="userLoginDto.password"/>
         </el-form-item>
         <el-form-item>
             <el-button class="button" type="primary" @click="login">
